@@ -9,3 +9,8 @@ command line:
 
     flutter build linux
     flutter build web --base-href=/mq/
+
+## Dependencies
+
+* https://pub.dev/packages/html_unescape
+* 
