@@ -1,16 +1,11 @@
-# mundanequest
+# Mundane Quest
 
-A simple questions and answers game, not unlike Trivial Pursuit.
+Mundane Quest is a simple question and answer game, not unlike Trivial Pursuit.
 
-## Getting Started
+## Building
 
-This project is a starting point for a Flutter application.
+This project can be build with Android Studio. Alternatively you can use the
+command line:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    flutter build linux
+    flutter build web --base-href=/mq/

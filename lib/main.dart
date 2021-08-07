@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 void main() {
   runApp(const MundaneQuest());
@@ -146,6 +147,7 @@ class StartGameDialogWidget extends StatefulWidget {
 
 class _StartGameDialogState extends State<StartGameDialogWidget> {
   var listOfPlayerNameControllers = <TextEditingController>[];
+  final QuestionBank questionBank = QuestionBank();
 
   void _incrementPlayerCount() {
     setState(() {
@@ -203,6 +205,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
           MaterialPageRoute(
               builder: (context) => PlayGameWidget(
                     listOfPlayerNames: listOfPlayerNames,
+                    questionBank: questionBank,
                   )),
         );
       }
@@ -307,8 +310,7 @@ class Question {
   }
 
   factory Question.fromJson(Map<String, dynamic> json) {
-    developer.log('Creating question from API response: $json',
-        name: 'org.freenono.mundaneQuest.main');
+    /// developer.log('Creating question from API response: $json', name: 'org.freenono.mundaneQuest.main');
     var incorrectAnswers = <String>[];
     for (var x in json['incorrect_answers']) {
       incorrectAnswers.add(x.toString());
@@ -343,52 +345,57 @@ enum ReturnCode {
 
 class QuestionBank {
   String sessionToken = '';
-  late QuestionBundle newQuestions;
+  late QuestionBundle currentBundle;
   Map<int, String> categories = {};
   int currentCategory = 0;
   static const amountQuestionsFromAPI = 10;
   String token = '';
 
   QuestionBank() {
-    _fetchSessionToken();
-    _fetchCategoriesList();
+    // fetch token for API, so that questions won't be send twice
+    _fetchSessionToken()
+        .then((value) => {
+              if (value.statusCode == 200)
+                {_parseTokenData(value.body)}
+              else
+                {throw Exception('Failed to fetch token from API!')}
+            })
+        .whenComplete(() => {
+              // fetch categories from API (does not need the token!)
+              _fetchCategoriesList().then((value) => {
+                    if (value.statusCode == 200)
+                      {_parseCategoryData(value.body)}
+                    else
+                      {throw Exception('Failed to fetch token from API!')}
+                  }) //.whenComplete(() => {
+              //switchCategory()
+              //})
+            });
   }
 
-  void _fetchSessionToken() async {
+  Future<Response> _fetchSessionToken() {
     developer.log('Getting token from OpenTDB API...',
         name: 'org.freenono.mundaneQuest.main');
     const String url = 'https://opentdb.com/api_token.php?command=request';
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      _parseTokenData(response.body);
-    } else {
-      throw Exception('Failed to fetch token from API!');
-    }
+    Future<http.Response> response = http.get(Uri.parse(url));
+    return response;
   }
 
-  void _fetchCategoriesList() async {
+  Future<Response> _fetchCategoriesList() {
+    developer.log('Getting categories from OpenTDB API...',
+        name: 'org.freenono.mundaneQuest.main');
     const String url = 'https://opentdb.com/api_category.php';
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      _parseCategoryData(response.body);
-    } else {
-      throw Exception('Failed to fetch categories from API!');
-    }
-    switchCategory();
+    Future<Response> response = http.get(Uri.parse(url));
+    return response;
   }
 
   Future<QuestionBundle> _fetchQuestions(int amount, int category,
-      {String difficulty = 'easy', String type = 'multiple'}) async {
+      {String difficulty = 'easy', String type = 'multiple'}) {
     // the category parameter is the id of the category, in the response each question contains the name of the category!
     var url =
         'https://opentdb.com/api.php?amount=$amount&category=$category&difficulty=$difficulty&type=$type&token=$token'; // &encode=url3986
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      //Future<QuestionBundle> future = Future<QuestionBundle>();
-      return _parseQuestionData(response.body);
-    } else {
-      throw Exception('Failed to fetch questions from API!');
-    }
+    Future response = http.get(Uri.parse(url));
+    return response.then((value) => _parseQuestionData(value.body));
   }
 
   Future<QuestionBundle> switchCategory() {
@@ -413,12 +420,16 @@ class QuestionBank {
         newQuestions.add(Question.fromJson(question));
       }
     } else if (jsonInput['response_code'] == 1) {
-      switchCategory();
+      developer.log(
+          'Got error code 1 from OpenTDB API while parsing questions!',
+          name: 'org.freenono.mundaneQuest.main');
     } else {
-      developer.log('Got error code from OpenTDB API while parsing questions!',
+      developer.log(
+          'Got some error code from OpenTDB API while parsing questions!',
           name: 'org.freenono.mundaneQuest.main');
     }
-    return QuestionBundle(newQuestions);
+    currentBundle = QuestionBundle(newQuestions);
+    return currentBundle;
   }
 
   void _parseCategoryData(String text) {
@@ -445,10 +456,12 @@ class QuestionBank {
 }
 
 class PlayGameWidget extends StatefulWidget {
-  const PlayGameWidget({Key? key, required this.listOfPlayerNames})
+  const PlayGameWidget(
+      {Key? key, required this.listOfPlayerNames, required this.questionBank})
       : super(key: key);
 
   final Iterable<String> listOfPlayerNames;
+  final QuestionBank questionBank;
 
   @override
   State<PlayGameWidget> createState() => _PlayGameState();
@@ -462,13 +475,12 @@ enum GameState {
 
 class _PlayGameState extends State<PlayGameWidget>
     with TickerProviderStateMixin {
-  final QuestionBank questionBank = QuestionBank();
   late QuestionBundle currentQuestionBundle;
 
   final Map<String, int> playerPoints = {};
   final List<String> playerReady = [];
   String currentPlayer = '';
-  int currentRound = 0;
+  int currentRound = 1;
   final List<String> currentRoundPlayers = [];
 
   Question? currentQuestion;
@@ -480,12 +492,14 @@ class _PlayGameState extends State<PlayGameWidget>
   late Timer gameTimer;
   bool _isRunning = true;
   static const int gameTime = 15;
-  static const int roundsPerGame = 3;
+  static const int roundsPerGame = 2;
 
   late AnimationController controller;
 
   @override
   void initState() {
+    developer.log('Initializing state of PlayGameWidget.',
+        name: 'org.freenono.mundaneQuest.main');
     // create controller for flashing the correct answer
     // Source: https://api.flutter.dev/flutter/material/LinearProgressIndicator-class.html
     controller = AnimationController(
@@ -513,11 +527,14 @@ class _PlayGameState extends State<PlayGameWidget>
       }
     });
 
+    // load a bundle of questions for the first round from a random category
+    _loadQuestionBundle();
+
     super.initState();
   }
 
   void _showDialog(BuildContext context, String message) {
-    // Source: https://googleflutter.com/flutter-alertdialog/
+    /// Source: https://googleflutter.com/flutter-alertdialog/
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -537,31 +554,32 @@ class _PlayGameState extends State<PlayGameWidget>
     );
   }
 
-  void _playNextQuestion() {
+  void _loadQuestionBundle() async {
+    // if new questions have to be fetched, load the next own after loading has finished
+    widget.questionBank.switchCategory().whenComplete(() => {
+          developer.log('Switching of category completed.',
+              name: 'org.freenono.mundaneQuest.main'),
+          currentQuestionBundle = widget.questionBank.currentBundle,
+          _loadNextQuestion(),
+          Future.delayed(const Duration(seconds: 5), () {
+            gameState = GameState.showQuestion;
+          })
+        });
+  }
+
+  void _loadNextQuestion() {
+    developer.log('Starting to load next question...',
+        name: 'org.freenono.mundaneQuest.main');
     var rng = Random();
 
     setState(() {
-      gameState = GameState.showQuestion;
-    });
-    setState(() {
-      // check whether the round has been finished
-      if (currentRoundPlayers.length == widget.listOfPlayerNames.length) {
-        // check whether the last round was played
-        if (currentRound >= roundsPerGame) {
-          // output game score at end on score board widget
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    ScoreBoardWidget(playerPoints: playerPoints)),
-          );
-        }
-
-        // reset round, change category and start next round
-        currentRoundPlayers.clear();
-        currentRound++;
-        currentQuestionBundle = questionBank.switchCategory() as QuestionBundle;
-      }
+      // fill out question and answers
+      currentQuestion = currentQuestionBundle.pop();
+      // create list with the correct and all incorrect answers and shuffle the answers
+      answers.clear();
+      answers.add(currentQuestion!.correctAnswer);
+      answers.addAll(currentQuestion!.incorrectAnswers);
+      answers.shuffle();
 
       // find next random player, that has not played in this round yet
       String nextPlayer = '';
@@ -572,17 +590,37 @@ class _PlayGameState extends State<PlayGameWidget>
       currentPlayer = nextPlayer;
       currentRoundPlayers.add(currentPlayer);
 
-      // fill out question and answers
-      currentQuestion = currentQuestionBundle.pop();
-      // create list with the correct and all incorrect answers and shuffle the answers
-      answers.clear();
-      answers.add(currentQuestion!.correctAnswer);
-      answers.addAll(currentQuestion!.incorrectAnswers);
-      answers.shuffle();
-
       // set start time for current question
       currentQuestionStartTime = gameTimer.tick;
+      gameState = GameState.showQuestion;
     });
+  }
+
+  void _playNextQuestion() {
+    developer.log('Starting to play next question...',
+        name: 'org.freenono.mundaneQuest.main');
+
+    // check whether the last round was played
+    if (currentRound == roundsPerGame &&
+        currentRoundPlayers.length == widget.listOfPlayerNames.length) {
+      // output game score at end on score board widget
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ScoreBoardWidget(playerPoints: playerPoints)),
+      );
+    } else {
+      // check whether the first round begins or the last round has been finished
+      if (currentRoundPlayers.length == widget.listOfPlayerNames.length) {
+        // reset round, change category and start next round
+        currentRoundPlayers.clear();
+        currentRound++;
+        _loadQuestionBundle();
+      } else {
+        // if no new questions have to be fetched, just get load the next own into GUI
+        _loadNextQuestion();
+      }
+    }
   }
 
   void _playerReady(String player) {
@@ -593,7 +631,6 @@ class _PlayGameState extends State<PlayGameWidget>
     });
     if (playerReady.length == widget.listOfPlayerNames.length) {
       gameState = GameState.showQuestion;
-      currentRound = 1;
       _playNextQuestion();
     }
   }
@@ -606,15 +643,12 @@ class _PlayGameState extends State<PlayGameWidget>
       var pb = Padding(
         padding: const EdgeInsets.all(50),
         child: Column(children: [
-          Text('Spieler ${i + 1}'),
+          Text('Player ${i + 1}'),
           ElevatedButton(
             child: Text(player),
-            onPressed:
-                playerReady.contains(player) && !(currentPlayer == player)
-                    ? null
-                    : () => _playerReady(player),
+            onPressed: !(currentPlayer == player) ? null : () => {},
           ),
-          Text('Punkte: ${playerPoints[player]}'),
+          Text('Points: ${playerPoints[player]}'),
         ]),
       );
       i++;
@@ -628,24 +662,22 @@ class _PlayGameState extends State<PlayGameWidget>
   }
 
   void _showCorrectAnswer() {
-    // TODO: Wait for some time and start next question only after that time!
-    //_playNextQuestion();
+    // wait for some time and start next question only after that time
     gameState = GameState.evalAnswer;
+    currentQuestionStartTime = 0;
     Future.delayed(const Duration(seconds: 5), () {
       controller.repeat(reverse: true);
-      setState(() {
-        _playNextQuestion();
-      });
+      _playNextQuestion();
     });
   }
 
   void _checkAnswer(String chosenAnswer) {
-    _showCorrectAnswer();
     if (chosenAnswer == currentQuestion!.correctAnswer) {
       setState(() {
         playerPoints[currentPlayer] = playerPoints[currentPlayer]! + 100;
       });
     }
+    _showCorrectAnswer();
   }
 
   List<Widget> _buildAnswerButtons() {
@@ -666,7 +698,9 @@ class _PlayGameState extends State<PlayGameWidget>
                         MaterialStateProperty.all<Color>(Colors.green),
                   )
                 : const ButtonStyle(),
-            onPressed: () => _checkAnswer(answer),
+            onPressed: gameState != GameState.readyPlayers
+                ? () => _checkAnswer(answer)
+                : null,
           ),
         );
       } else {
@@ -680,7 +714,9 @@ class _PlayGameState extends State<PlayGameWidget>
                         MaterialStateProperty.all<Color>(Colors.red),
                   )
                 : const ButtonStyle(),
-            onPressed: () => _checkAnswer(answer),
+            onPressed: gameState != GameState.readyPlayers
+                ? () => _checkAnswer(answer)
+                : null,
           ),
         );
       }
@@ -729,7 +765,7 @@ class _PlayGameState extends State<PlayGameWidget>
           child: Text(
               gameState != GameState.readyPlayers
                   ? 'Question:\n' + (currentQuestion?.questionText ?? '')
-                  : '',
+                  : 'Loading Questions...',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headline3),
         ),
@@ -768,11 +804,14 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
     List<Widget> scoreFields = [];
 
     for (var player in widget.playerPoints.keys) {
-      scoreFields.add(Column(children: [
-        Text('Player: $player', style: Theme.of(context).textTheme.headline3),
-        Text('Points: ${widget.playerPoints[player]}',
-            style: Theme.of(context).textTheme.headline4),
-      ]));
+      scoreFields.add(Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(children: [
+            Text('Player: $player',
+                style: Theme.of(context).textTheme.headline3),
+            Text('Points: ${widget.playerPoints[player]}',
+                style: Theme.of(context).textTheme.headline4),
+          ])));
     }
 
     return scoreFields;
@@ -781,10 +820,28 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Score Board'),
-      ),
-      body: Center(child: Row(children: _buildScoreFields())),
-    );
+        appBar: AppBar(
+          title: const Text('Score Board'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Text('Score Board', style: Theme.of(context).textTheme.headline2),
+              Row(children: [
+                Expanded(child: Container()),
+                Row(children: _buildScoreFields()),
+                Expanded(child: Container()),
+              ])
+            ],
+          ),
+        )
+        //Navigator.push(
+        //             context,
+        //             MaterialPageRoute(
+        //                 builder: (context) =>
+        //                     ScoreBoardWidget(playerPoints: playerPoints)),
+        //           );
+        );
   }
 }
