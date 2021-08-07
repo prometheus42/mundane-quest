@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MundaneQuest());
@@ -377,7 +378,7 @@ class QuestionBank {
   late QuestionBundle currentBundle;
   Map<int, String> categories = {};
   int currentCategory = 0;
-  static const amountQuestionsFromAPI = 10;
+  static const amountQuestionsFromAPI = 6; // maximum number of players is 5
   String token = '';
 
   QuestionBank() {
@@ -396,9 +397,7 @@ class QuestionBank {
                       {_parseCategoryData(value.body)}
                     else
                       {throw Exception('Failed to fetch token from API!')}
-                  }) //.whenComplete(() => {
-              //switchCategory()
-              //})
+                  })
             });
   }
 
@@ -522,10 +521,10 @@ class _PlayGameState extends State<PlayGameWidget>
   GameState gameState = GameState.readyPlayers;
   late Timer gameTimer;
   bool _isRunning = true;
-  static const int gameTime = 15;
-  static const int roundsPerGame = 2;
-  static const int defaultDelayTime = 4;
-  static const int defaultReadyTime = 8;
+  int gameTime = 30;
+  int roundsPerGame = 8;
+  int defaultDelayTime = 4;
+  int defaultReadyTime = 8;
 
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
@@ -536,9 +535,11 @@ class _PlayGameState extends State<PlayGameWidget>
     developer.log('Initializing state of PlayGameWidget.',
         name: 'org.freenono.mundaneQuest.main');
 
+    loadConfiguration();
+
     // wait for some time to allow all players to get ready...
     GameState gameState = GameState.readyPlayers;
-    readyDelay = Future.delayed(const Duration(seconds: defaultReadyTime), () {
+    readyDelay = Future.delayed(Duration(seconds: defaultReadyTime), () {
       setState(() {
         gameState = GameState.showQuestion;
         _loadNextQuestion();
@@ -572,7 +573,25 @@ class _PlayGameState extends State<PlayGameWidget>
     // load a bundle of questions for the first round from a random category
     _loadQuestionBundle();
 
+    saveConfiguration();
+
     super.initState();
+  }
+
+  void loadConfiguration() async {
+    final prefs = await SharedPreferences.getInstance();
+    gameTime = prefs.getInt('gameTime') ?? 30;
+    roundsPerGame = prefs.getInt('roundsPerGame') ?? 7;
+    defaultDelayTime = prefs.getInt('defaultDelayTime') ?? 4;
+    defaultReadyTime = prefs.getInt('defaultReadyTime') ?? 8;
+  }
+
+  void saveConfiguration() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('gameTime', gameTime);
+    prefs.setInt('roundsPerGame', roundsPerGame);
+    prefs.setInt('defaultDelayTime', defaultDelayTime);
+    prefs.setInt('defaultReadyTime', defaultReadyTime);
   }
 
   void _showDialog(BuildContext context, String message) {
@@ -656,7 +675,7 @@ class _PlayGameState extends State<PlayGameWidget>
       });
 
       // output game score at end on score board widget
-      Future.delayed(const Duration(seconds: defaultDelayTime), () {
+      Future.delayed(Duration(seconds: defaultDelayTime), () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -675,7 +694,7 @@ class _PlayGameState extends State<PlayGameWidget>
         currentRound++;
         _loadQuestionBundle();
         readyDelay =
-            Future.delayed(const Duration(seconds: defaultDelayTime), () {
+            Future.delayed(Duration(seconds: defaultDelayTime), () {
           setState(() {
             gameState = GameState.showQuestion;
             _loadNextQuestion();
@@ -697,7 +716,7 @@ class _PlayGameState extends State<PlayGameWidget>
       gameState = GameState.evalAnswer;
     });
     waitAfterAnswerDelay =
-        Future.delayed(const Duration(seconds: defaultDelayTime), () {
+        Future.delayed(Duration(seconds: defaultDelayTime), () {
       _playNextQuestion();
     });
   }
@@ -850,6 +869,7 @@ class _PlayGameState extends State<PlayGameWidget>
 
   @override
   void dispose() {
+    saveConfiguration();
     _isRunning = false;
     super.dispose();
   }
@@ -874,7 +894,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
     sortedPoints.sort();
     sortedPoints = sortedPoints.reversed.toList();
     print(sortedPoints);
-    //   Navigator.pushReplacementNamed(context, '/');
+    /// Navigator.pushReplacementNamed(context, '/');
     super.initState();
   }
 
