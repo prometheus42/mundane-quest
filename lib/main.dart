@@ -524,6 +524,8 @@ class _PlayGameState extends State<PlayGameWidget>
   bool _isRunning = true;
   static const int gameTime = 15;
   static const int roundsPerGame = 2;
+  static const int defaultDelayTime = 4;
+  static const int defaultReadyTime = 8;
 
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
@@ -536,7 +538,7 @@ class _PlayGameState extends State<PlayGameWidget>
 
     // wait for some time to allow all players to get ready...
     GameState gameState = GameState.readyPlayers;
-    readyDelay = Future.delayed(const Duration(seconds: 10), () {
+    readyDelay = Future.delayed(const Duration(seconds: defaultReadyTime), () {
       setState(() {
         gameState = GameState.showQuestion;
         _loadNextQuestion();
@@ -654,7 +656,7 @@ class _PlayGameState extends State<PlayGameWidget>
       });
 
       // output game score at end on score board widget
-      Future.delayed(const Duration(seconds: 5), () {
+      Future.delayed(const Duration(seconds: defaultDelayTime), () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -672,7 +674,8 @@ class _PlayGameState extends State<PlayGameWidget>
         currentRoundPlayers.clear();
         currentRound++;
         _loadQuestionBundle();
-        readyDelay = Future.delayed(const Duration(seconds: 5), () {
+        readyDelay =
+            Future.delayed(const Duration(seconds: defaultDelayTime), () {
           setState(() {
             gameState = GameState.showQuestion;
             _loadNextQuestion();
@@ -693,7 +696,8 @@ class _PlayGameState extends State<PlayGameWidget>
     setState(() {
       gameState = GameState.evalAnswer;
     });
-    waitAfterAnswerDelay = Future.delayed(const Duration(seconds: 5), () {
+    waitAfterAnswerDelay =
+        Future.delayed(const Duration(seconds: defaultDelayTime), () {
       _playNextQuestion();
     });
   }
@@ -745,30 +749,42 @@ class _PlayGameState extends State<PlayGameWidget>
       if (answer == currentQuestion!.correctAnswer) {
         pb = Padding(
           padding: const EdgeInsets.all(20),
-          child: gameState == GameState.readyPlayers ? Container() : ElevatedButton(
-            child: Text(answer),
-            style: gameState == GameState.evalAnswer
-                ? ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green),
-                  )
-                : const ButtonStyle(),
-            onPressed: () => _checkGivenAnswer(answer),
-          ),
+          child: gameState == GameState.readyPlayers
+              ? Container()
+              : ElevatedButton(
+                  child: SizedBox(
+                    width: 200,
+                    child: Text(answer),
+                  ),
+                  style: gameState == GameState.evalAnswer ||
+                          gameState == GameState.gameEnded
+                      ? ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Colors.green),
+                        )
+                      : const ButtonStyle(),
+                  onPressed: () => _checkGivenAnswer(answer),
+                ),
         );
       } else {
         pb = Padding(
           padding: const EdgeInsets.all(20),
-          child: gameState == GameState.readyPlayers ? Container() : ElevatedButton(
-            child: Text(answer),
-            style: gameState == GameState.evalAnswer
-                ? ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.red),
-                  )
-                : const ButtonStyle(),
-            onPressed: () => _checkGivenAnswer(answer),
-          ),
+          child: gameState == GameState.readyPlayers
+              ? Container()
+              : ElevatedButton(
+                  child: SizedBox(
+                    width: 200,
+                    child: Text(answer),
+                  ),
+                  style: gameState == GameState.evalAnswer ||
+                          gameState == GameState.gameEnded
+                      ? ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Colors.red),
+                        )
+                      : const ButtonStyle(),
+                  onPressed: () => _checkGivenAnswer(answer),
+                ),
         );
       }
       answerButtons.add(pb);
@@ -850,12 +866,34 @@ class ScoreBoardWidget extends StatefulWidget {
 }
 
 class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
-  // @override
-  // void initState() {
-  //
-  //   Navigator.pushReplacementNamed(context, '/');
-  //   super.initState();
-  // }
+  var sortedPoints = [];
+
+  @override
+  void initState() {
+    var sortedPoints = widget.playerPoints.values.toList();
+    sortedPoints.sort();
+    sortedPoints = sortedPoints.reversed.toList();
+    print(sortedPoints);
+    //   Navigator.pushReplacementNamed(context, '/');
+    super.initState();
+  }
+
+  Color _getColorForPlayer(player) {
+    if (sortedPoints.isNotEmpty) {
+      if (widget.playerPoints[player] == sortedPoints[0]) {
+        return Colors.yellowAccent;
+      } else if (widget.playerPoints[player] == sortedPoints[1]) {
+        return Colors.grey;
+      } else if (sortedPoints.length > 2 &&
+          widget.playerPoints[player] == sortedPoints[2]) {
+        return Colors.brown;
+      } else {
+        return Colors.white;
+      }
+    } else {
+      return Colors.white;
+    }
+  }
 
   List<Widget> _buildScoreFields() {
     List<Widget> scoreFields = [];
@@ -865,9 +903,15 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
           padding: const EdgeInsets.all(20),
           child: Column(children: [
             Text('Player: $player',
-                style: Theme.of(context).textTheme.headline3),
+                style: Theme.of(context)
+                    .textTheme
+                    .headline3!
+                    .apply(backgroundColor: _getColorForPlayer(player))),
             Text('Points: ${widget.playerPoints[player]}',
-                style: Theme.of(context).textTheme.headline4),
+                style: Theme.of(context)
+                    .textTheme
+                    .headline4!
+                    .apply(backgroundColor: _getColorForPlayer(player))),
           ])));
     }
 
