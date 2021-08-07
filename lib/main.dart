@@ -379,9 +379,12 @@ class QuestionBank {
   Map<int, String> categories = {};
   int currentCategory = 0;
   static const amountQuestionsFromAPI = 6; // maximum number of players is 5
+  String defaultQuestionDifficulty = 'easy';
   String token = '';
 
   QuestionBank() {
+    loadConfiguration();
+
     // fetch token for API, so that questions won't be send twice
     _fetchSessionToken()
         .then((value) => {
@@ -401,6 +404,11 @@ class QuestionBank {
             });
   }
 
+  void loadConfiguration() async {
+    final prefs = await SharedPreferences.getInstance();
+    defaultQuestionDifficulty = prefs.getString('defaultQuestionDifficulty') ?? 'easy';
+  }
+
   Future<Response> _fetchSessionToken() {
     developer.log('Getting token from OpenTDB API...',
         name: 'org.freenono.mundaneQuest.main');
@@ -418,7 +426,11 @@ class QuestionBank {
   }
 
   Future<QuestionBundle> _fetchQuestions(int amount, int category,
-      {String difficulty = 'easy', String type = 'multiple'}) {
+      {String difficulty = '', String type = 'multiple'}) {
+    // use default value for difficulty, that has been loaded from file
+    if (difficulty.isEmpty) {
+      difficulty = defaultQuestionDifficulty;
+    }
     // the category parameter is the id of the category, in the response each question contains the name of the category!
     var url =
         'https://opentdb.com/api.php?amount=$amount&category=$category&difficulty=$difficulty&type=$type&token=$token'; // &encode=url3986
@@ -426,15 +438,26 @@ class QuestionBank {
     return response.then((value) => _parseQuestionData(value.body));
   }
 
-  Future<QuestionBundle> switchCategory() {
-    var rng = Random();
-    int newCategory =
-        categories.keys.elementAt(rng.nextInt(categories.keys.length));
-    currentCategory = newCategory;
-    developer.log('Switched category to: ${categories[currentCategory]}',
+  void _parseTokenData(String text) {
+    developer.log('Parsing token from OpenTDB API...',
         name: 'org.freenono.mundaneQuest.main');
-    return _fetchQuestions(amountQuestionsFromAPI, currentCategory,
-        difficulty: 'easy', type: 'multiple');
+    Map<String, dynamic> jsonInput = jsonDecode(text);
+    if (jsonInput['response_code'] == 0) {
+      token = jsonInput['token'];
+    } else {
+      developer.log('Got error code from OpenTDB API!',
+          name: 'org.freenono.mundaneQuest.main');
+    }
+  }
+
+  void _parseCategoryData(String text) {
+    developer.log('Parsing categories from OpenTDB API...',
+        name: 'org.freenono.mundaneQuest.main');
+    Map<String, dynamic> jsonInput = jsonDecode(text);
+    for (var c in jsonInput['trivia_categories']) {
+      // data from API: {"id":9,"name":"General Knowledge"}
+      categories[c['id']] = c['name'];
+    }
   }
 
   QuestionBundle _parseQuestionData(String text) {
@@ -461,26 +484,15 @@ class QuestionBank {
     return currentBundle;
   }
 
-  void _parseCategoryData(String text) {
-    developer.log('Parsing categories from OpenTDB API...',
+  Future<QuestionBundle> switchCategory() {
+    var rng = Random();
+    int newCategory =
+        categories.keys.elementAt(rng.nextInt(categories.keys.length));
+    currentCategory = newCategory;
+    developer.log('Switched category to: ${categories[currentCategory]}',
         name: 'org.freenono.mundaneQuest.main');
-    Map<String, dynamic> jsonInput = jsonDecode(text);
-    for (var c in jsonInput['trivia_categories']) {
-      // data from API: {"id":9,"name":"General Knowledge"}
-      categories[c['id']] = c['name'];
-    }
-  }
-
-  void _parseTokenData(String text) {
-    developer.log('Parsing token from OpenTDB API...',
-        name: 'org.freenono.mundaneQuest.main');
-    Map<String, dynamic> jsonInput = jsonDecode(text);
-    if (jsonInput['response_code'] == 0) {
-      token = jsonInput['token'];
-    } else {
-      developer.log('Got error code from OpenTDB API!',
-          name: 'org.freenono.mundaneQuest.main');
-    }
+    return _fetchQuestions(amountQuestionsFromAPI, currentCategory,
+        difficulty: 'easy', type: 'multiple');
   }
 }
 
@@ -740,7 +752,7 @@ class _PlayGameState extends State<PlayGameWidget>
         padding: const EdgeInsets.all(40),
         child: Column(children: [
           Text('Player ${i + 1}'),
-          SizedBox(
+          const SizedBox(
             height: 25,
           ),
           SizedBox(
@@ -750,7 +762,7 @@ class _PlayGameState extends State<PlayGameWidget>
               onPressed: !(currentPlayer == player) ? null : () => {},
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 25,
           ),
           Text('Points: ${playerPoints[player]}',
@@ -902,7 +914,6 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
     var sortedPoints = widget.playerPoints.values.toList();
     sortedPoints.sort();
     sortedPoints = sortedPoints.reversed.toList();
-    print(sortedPoints);
 
     /// Navigator.pushReplacementNamed(context, '/');
     super.initState();

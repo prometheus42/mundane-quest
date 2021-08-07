@@ -13,4 +13,4 @@ command line:
 ## Dependencies
 
 * https://pub.dev/packages/html_unescape
-* 
+* https://pub.dev/packages/shared_preferences
