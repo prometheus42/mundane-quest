@@ -693,8 +693,7 @@ class _PlayGameState extends State<PlayGameWidget>
         currentRoundPlayers.clear();
         currentRound++;
         _loadQuestionBundle();
-        readyDelay =
-            Future.delayed(Duration(seconds: defaultDelayTime), () {
+        readyDelay = Future.delayed(Duration(seconds: defaultDelayTime), () {
           setState(() {
             gameState = GameState.showQuestion;
             _loadNextQuestion();
@@ -738,14 +737,24 @@ class _PlayGameState extends State<PlayGameWidget>
 
     for (var player in widget.listOfPlayerNames) {
       var pb = Padding(
-        padding: const EdgeInsets.all(50),
+        padding: const EdgeInsets.all(40),
         child: Column(children: [
           Text('Player ${i + 1}'),
-          ElevatedButton(
-            child: Text(player),
-            onPressed: !(currentPlayer == player) ? null : () => {},
+          SizedBox(
+            height: 25,
           ),
-          Text('Points: ${playerPoints[player]}'),
+          SizedBox(
+            width: 300,
+            child: ElevatedButton(
+              child: Text(player, style: Theme.of(context).textTheme.headline4),
+              onPressed: !(currentPlayer == player) ? null : () => {},
+            ),
+          ),
+          SizedBox(
+            height: 25,
+          ),
+          Text('Points: ${playerPoints[player]}',
+              style: Theme.of(context).textTheme.headline5),
         ]),
       );
       i++;
@@ -894,6 +903,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
     sortedPoints.sort();
     sortedPoints = sortedPoints.reversed.toList();
     print(sortedPoints);
+
     /// Navigator.pushReplacementNamed(context, '/');
     super.initState();
   }
