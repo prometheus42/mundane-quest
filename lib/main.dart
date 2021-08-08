@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
 // TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
-import '' if (dart.library.html) 'dart:html' as html;
+//import '' if (dart.library.html) 'dart:html' as html;
 
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
-// Source: https://stackoverflow.com/a/50744481
+//import 'dart:io' show Platform;
+//import 'package:flutter/foundation.dart' show kIsWeb;
 // if (Platform.isAndroid) {
 //   // Android-specific code
 // } else if (Platform.isLinux) {
@@ -19,16 +18,27 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 // } else {
 //   // NOT running on the web! You can check for additional platforms here.
 // }
+// Source: https://stackoverflow.com/a/50744481
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(const MundaneQuest());
+  initSettings().then((_) {
+    runApp(const MundaneQuest());
+  });
+}
+
+// Initialize the settings provider, see https://pub.dev/packages/flutter_settings_screens/example
+Future<void> initSettings() async {
+  await Settings.init(
+    cacheProvider: SharePreferenceCache(),
+  );
 }
 
 class MundaneQuest extends StatelessWidget {
@@ -73,8 +83,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
         focusNode: FocusNode(),
         autofocus: true,
         onKey: (RawKeyEvent keyEvent) {
-          print(
-              '${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
+          developer.log('${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
           if (keyEvent.character == 'q') {
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           } else if (keyEvent.character == 'h') {
@@ -128,7 +137,12 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                     ),
                     child: Text('Change settings (s)', style: Theme.of(context).textTheme.headline5),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsWidget()),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -166,6 +180,92 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
         ),
       ),
     );
+  }
+}
+
+class SettingsWidget extends StatefulWidget {
+  const SettingsWidget({Key? key}) : super(key: key);
+
+  @override
+  _SettingsWidgetState createState() => _SettingsWidgetState();
+}
+
+class _SettingsWidgetState extends State<SettingsWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return SettingsScreen(title: "Application Settings", children: [
+      SettingsGroup(
+        title: 'Game',
+        children: [
+          SliderSettingsTile(
+            settingKey: 'gameTime',
+            title: 'Answer Time',
+            subtitle: 'How long should the players have to answer questions?',
+            defaultValue: 30,
+            min: 1.0,
+            max: 60.0,
+            step: 5,
+            leading: const Icon(Icons.timer),
+          ),
+          SliderSettingsTile(
+            settingKey: 'defaultDelayTime',
+            title: 'Delay Time',
+            subtitle: 'How long should the correct answer be shown?',
+            defaultValue: 4,
+            min: 1.0,
+            max: 20.0,
+            step: 1,
+            leading: const Icon(Icons.timer),
+          ),
+          SliderSettingsTile(
+            settingKey: 'defaultReadyTime',
+            title: 'Ready Time',
+            subtitle: 'How long should players have to ready themselves before answering?',
+            defaultValue: 8,
+            min: 1.0,
+            max: 20.0,
+            step: 1,
+            leading: const Icon(Icons.timer),
+          ),
+          SliderSettingsTile(
+            settingKey: 'roundsPerGame',
+            title: 'Rounds per Game',
+            subtitle: 'How many rounds should a game have?',
+            defaultValue: 7,
+            min: 1.0,
+            max: 10.0,
+            step: 1,
+            leading: const Icon(Icons.replay_circle_filled),
+          ),
+          RadioSettingsTile(
+              title: 'Difficulty',
+              settingKey: 'defaultQuestionDifficulty',
+              selected: 'easy',
+              leading: const Icon(Icons.star_border),
+              values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'})
+        ],
+      ),
+      SettingsGroup(
+        title: 'Control',
+        children: [
+          SwitchSettingsTile(
+            settingKey: 'gamepad-support',
+            title: 'Should gamepad support be activated?',
+            leading: const Icon(Icons.gamepad),
+          ),
+        ],
+      ),
+      SettingsGroup(
+        title: 'Audio',
+        children: [
+          SwitchSettingsTile(
+            settingKey: 'audio-activated',
+            title: 'Should audio be activated?',
+            leading: const Icon(Icons.audiotrack),
+          ),
+        ],
+      )
+    ]);
   }
 }
 
@@ -533,6 +633,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   var rng = Random();
 
   late Timer gamepadTimer;
+
   //final List<html.Gamepad> listOfGamepads = [];
   final List<bool> gamePadButtons = [];
   bool gamepadPresent = false;
@@ -640,39 +741,18 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   void loadConfiguration() async {
     final prefs = await SharedPreferences.getInstance();
-    gameTime = prefs.getInt('gameTime') ?? 30;
-    roundsPerGame = prefs.getInt('roundsPerGame') ?? 7;
-    defaultDelayTime = prefs.getInt('defaultDelayTime') ?? 4;
-    defaultReadyTime = prefs.getInt('defaultReadyTime') ?? 8;
+    gameTime = prefs.getDouble('gameTime')?.toInt() ?? 30;
+    roundsPerGame = prefs.getDouble('roundsPerGame')?.toInt() ?? 7;
+    defaultDelayTime = prefs.getDouble('defaultDelayTime')?.toInt() ?? 4;
+    defaultReadyTime = prefs.getDouble('defaultReadyTime')?.toInt() ?? 8;
   }
 
   void saveConfiguration() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('gameTime', gameTime);
-    prefs.setInt('roundsPerGame', roundsPerGame);
-    prefs.setInt('defaultDelayTime', defaultDelayTime);
-    prefs.setInt('defaultReadyTime', defaultReadyTime);
-  }
-
-  void _showDialog(BuildContext context, String message) {
-    /// Source: https://googleflutter.com/flutter-alertdialog/
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Alert!!"),
-          content: Text(message),
-          actions: <Widget>[
-            ElevatedButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    prefs.setDouble('gameTime', gameTime.toDouble());
+    prefs.setDouble('roundsPerGame', roundsPerGame.toDouble());
+    prefs.setDouble('defaultDelayTime', defaultDelayTime.toDouble());
+    prefs.setDouble('defaultReadyTime', defaultReadyTime.toDouble());
   }
 
   void _loadQuestionBundle() async {
