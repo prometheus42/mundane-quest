@@ -90,80 +90,80 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
           }
         },
         child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Image(image: AssetImage('assets/logo.png')),
-            Text(
-              'Mundane Quest',
-              style: Theme.of(context).textTheme.headline2,
-            ),
-            const SizedBox(height: 60),
-            ConstrainedBox(
-              constraints: const BoxConstraints.tightFor(width: 400),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
-                child: ElevatedButton(
-                  style: ButtonStyle(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Image(image: AssetImage('assets/logo.png')),
+              Text(
+                'Mundane Quest',
+                style: Theme.of(context).textTheme.headline2,
+              ),
+              const SizedBox(height: 60),
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
-                  ),
+                    ),
                     child: Text('Play game (p)', style: Theme.of(context).textTheme.headline5),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
                         MaterialPageRoute(builder: (context) => const StartGameDialogWidget()),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            ConstrainedBox(
-              constraints: const BoxConstraints.tightFor(width: 400),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
-                child: ElevatedButton(
-                  style: ButtonStyle(
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
-                  ),
+                    ),
                     child: Text('Change settings (s)', style: Theme.of(context).textTheme.headline5),
-                  onPressed: () {},
+                    onPressed: () {},
+                  ),
                 ),
               ),
-            ),
-            ConstrainedBox(
-              constraints: const BoxConstraints.tightFor(width: 400),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
-                child: ElevatedButton(
-                  style: ButtonStyle(
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
-                  ),
+                    ),
                     child: Text('Get help (h)', style: Theme.of(context).textTheme.headline5),
-                  onPressed: () {},
+                    onPressed: () {},
+                  ),
                 ),
               ),
-            ),
-            ConstrainedBox(
-              constraints: const BoxConstraints.tightFor(width: 400),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
-                child: ElevatedButton(
-                  style: ButtonStyle(
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
-                  ),
+                    ),
                     child: Text('Quit game (q)', style: Theme.of(context).textTheme.headline5),
-                  // exit app programmatically: https://stackoverflow.com/a/49067313
+                    // exit app programmatically: https://stackoverflow.com/a/49067313
                     onPressed: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -925,45 +925,45 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           }
         },
         child: Center(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Row(children: [
-          Padding(
-            padding: const EdgeInsets.all(50),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Row(children: [
+            Padding(
+              padding: const EdgeInsets.all(50),
               child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
-          ),
-          Expanded(child: Container()),
-          /*Padding(
+            ),
+            Expanded(child: Container()),
+            /*Padding(
             padding: EdgeInsets.all(50),
             child: Text('Current player: ${currentPlayer}', style: Theme.of(context).textTheme.headline5),
           ),
           Expanded(child: Container()),*/
-          Padding(
-            padding: const EdgeInsets.all(50),
+            Padding(
+              padding: const EdgeInsets.all(50),
               child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
-          ),
+            ),
+            Expanded(child: Container()),
+            Padding(
+              padding: const EdgeInsets.all(50),
+              child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
+            ),
+          ]),
           Expanded(child: Container()),
           Padding(
-            padding: const EdgeInsets.all(50),
-              child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
-          ),
-        ]),
-        Expanded(child: Container()),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
+            padding: const EdgeInsets.all(20),
+            child: Text(
                 gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : 'Loading Questions...',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headline3),
-        ),
-        Row(children: _buildAnswerButtons()),
-        Expanded(child: Container()),
-        Row(children: _buildPlayerButtons()),
-        LinearProgressIndicator(
-          value: gameProgress,
-          minHeight: 20,
-          semanticsLabel: 'Linear progress indicator',
-        ),
-      ])),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headline3),
+          ),
+          Row(children: _buildAnswerButtons()),
+          Expanded(child: Container()),
+          Row(children: _buildPlayerButtons()),
+          LinearProgressIndicator(
+            value: gameProgress,
+            minHeight: 20,
+            semanticsLabel: 'Linear progress indicator',
+          ),
+        ])),
       ),
     );
   }
