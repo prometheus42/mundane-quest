@@ -2,6 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
+// TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
+import '' if (dart.library.html) 'dart:html' as html;
+
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Source: https://stackoverflow.com/a/50744481
+// if (Platform.isAndroid) {
+//   // Android-specific code
+// } else if (Platform.isLinux) {
+//   // Linux-specific code
+// }
+//
+// if (kIsWeb) {
+//   // running on the web!
+// } else {
+//   // NOT running on the web! You can check for additional platforms here.
+// }
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -515,6 +532,11 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   late Future waitAfterAnswerDelay;
   var rng = Random();
 
+  late Timer gamepadTimer;
+  //final List<html.Gamepad> listOfGamepads = [];
+  final List<bool> gamePadButtons = [];
+  bool gamepadPresent = false;
+
   @override
   void initState() {
     developer.log('Initializing state of PlayGameWidget.', name: 'org.freenono.mundaneQuest.main');
@@ -556,10 +578,65 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     // load a bundle of questions for the first round from a random category
     _loadQuestionBundle();
 
+    //initializeGamepad();
+
     saveConfiguration();
 
     super.initState();
   }
+
+  // void initializeGamepad() {
+  //   html.GamepadEvent gpe;
+  //   html.window.addEventListener(
+  //       "gamepadconnected",
+  //       (e) => {
+  //             gpe = e as html.GamepadEvent,
+  //             print('New gamepad found: ${gpe.gamepad!.id}'),
+  //             if (gpe.gamepad != null) {listOfGamepads.add(gpe.gamepad!), gamepadPresent = true}
+  //           });
+  //   html.window.addEventListener(
+  //       "gamepaddisconnected",
+  //       (e) => {
+  //             gpe = e as html.GamepadEvent,
+  //             print('Gamepad was disconnected: ${gpe.gamepad!.id}'),
+  //             if (gpe.gamepad != null) {listOfGamepads.remove(gpe.gamepad!)}
+  //           });
+  //
+  //   gamepadTimer = Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
+  //     if (gamepadPresent) {
+  //       var gamepads = html.window.navigator.getGamepads();
+  //       for (var gamepad in gamepads) {
+  //         if (gamepad != null) {
+  //           gamepadPresent = true;
+  //           if (!gamePadButtons[0] && (gamepad.buttons![0].pressed ?? false)) {
+  //             _checkGivenAnswer(answers[0]);
+  //             gamePadButtons[0] = true;
+  //           } else {
+  //             gamePadButtons[0] = false;
+  //           }
+  //           if (!gamePadButtons[1] && (gamepad.buttons![1].pressed ?? false)) {
+  //             _checkGivenAnswer(answers[1]);
+  //             gamePadButtons[1] = true;
+  //           } else {
+  //             gamePadButtons[1] = false;
+  //           }
+  //           if (!gamePadButtons[2] && (gamepad.buttons![2].pressed ?? false)) {
+  //             _checkGivenAnswer(answers[2]);
+  //             gamePadButtons[2] = true;
+  //           } else {
+  //             gamePadButtons[2] = false;
+  //           }
+  //           if (!gamePadButtons[3] && (gamepad.buttons![3].pressed ?? false)) {
+  //             _checkGivenAnswer(answers[3]);
+  //             gamePadButtons[3] = true;
+  //           } else {
+  //             gamePadButtons[3] = false;
+  //           }
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 
   void loadConfiguration() async {
     final prefs = await SharedPreferences.getInstance();
@@ -895,6 +972,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   void dispose() {
     saveConfiguration();
     _isRunning = false;
+    gamepadTimer.cancel();
     super.dispose();
   }
 }
