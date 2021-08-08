@@ -12,5 +12,9 @@ command line:
 
 ## Dependencies
 
+All trivial questions are coming from the OpenTrivia Database
+(https://opentdb.com/). An API description can be found under
+https://opentdb.com/api_config.php.
+
 * https://pub.dev/packages/html_unescape
 * https://pub.dev/packages/shared_preferences
