@@ -17,7 +17,6 @@ void main() {
 class MundaneQuest extends StatelessWidget {
   const MundaneQuest({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -63,18 +62,15 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                 padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.yellow),
-                    padding:
-                        MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
                   child: Text('Start standard game...',
                       style: Theme.of(context).textTheme.headline5),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const StartGameDialogWidget()),
+                        MaterialPageRoute(builder: (context) => const StartGameDialogWidget()),
                     );
                   },
                 ),
@@ -86,10 +82,8 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                 padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.yellow),
-                    padding:
-                        MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
                   child: Text('Change settings...',
                       style: Theme.of(context).textTheme.headline5),
@@ -103,10 +97,8 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                 padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.yellow),
-                    padding:
-                        MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
                   child: Text('Get help...',
                       style: Theme.of(context).textTheme.headline5),
@@ -120,16 +112,13 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                 padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.yellow),
-                    padding:
-                        MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
                   child: Text('Quit game...',
                       style: Theme.of(context).textTheme.headline5),
                   // exit app programmatically: https://stackoverflow.com/a/49067313
-                  onPressed: () => SystemChannels.platform
-                      .invokeMethod('SystemNavigator.pop'),
+                    onPressed: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
                 ),
               ),
             ),
@@ -154,8 +143,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
   void _incrementPlayerCount() {
     setState(() {
       if (listOfPlayerNameControllers.length < 5) {
-        developer.log('Adding new player to the roster...',
-            name: 'org.freenono.mundaneQuest.main');
+        developer.log('Adding new player to the roster...', name: 'org.freenono.mundaneQuest.main');
         TextEditingController newController = TextEditingController();
         listOfPlayerNameControllers.add(newController);
       } else {
@@ -163,8 +151,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
         scaffold.showSnackBar(
           SnackBar(
             content: const Text('The maximum number of players is 5!'),
-            action: SnackBarAction(
-                label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
+            action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
       }
@@ -174,14 +161,12 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
   void _handleStartGame(BuildContext context) {
     final scaffold = ScaffoldMessenger.of(context);
 
-    developer.log('Checking whether enough player are given...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Checking whether enough player are given...', name: 'org.freenono.mundaneQuest.main');
     if (listOfPlayerNameControllers.length < 2) {
       scaffold.showSnackBar(
         SnackBar(
           content: const Text('You need at least 2 players!'),
-          action: SnackBarAction(
-              label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
+          action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
         ),
       );
     } else {
@@ -191,16 +176,14 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
         scaffold.showSnackBar(
           SnackBar(
             content: const Text('No player name shall be used twice!'),
-            action: SnackBarAction(
-                label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
+            action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
       } else if (listOfPlayerNames.any((element) => element.isEmpty)) {
         scaffold.showSnackBar(
           SnackBar(
             content: const Text('Some player names are empty!'),
-            action: SnackBarAction(
-                label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
+            action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
       } else {
@@ -235,9 +218,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
                 width: 500,
                 child: TextField(
                   controller: element,
-                  decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      hintText: 'Enter name for player $no'),
+                  decoration: InputDecoration(border: const OutlineInputBorder(), hintText: 'Enter name for player $no'),
                 )),
             const SizedBox(width: 20),
             ElevatedButton(
@@ -245,8 +226,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
                   setState(() {
                     listOfPlayerNameControllers.remove(element);
                   });
-                  developer.log('Removing player from roster...',
-                      name: 'org.freenono.mundaneQuest.main');
+                  developer.log('Removing player from roster...', name: 'org.freenono.mundaneQuest.main');
                 },
                 child: const Text('Delete'))
           ])));
@@ -263,8 +243,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text('Add players to the game',
-                  style: Theme.of(context).textTheme.headline3),
+              child: Text('Add players to the game', style: Theme.of(context).textTheme.headline3),
             ),
             const SizedBox(height: 60),
             Column(
@@ -273,11 +252,9 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
             const SizedBox(height: 60),
             ElevatedButton(
               style: ButtonStyle(
-                foregroundColor:
-                    MaterialStateProperty.all<Color>(Colors.yellow),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
               ),
-              child: Text('Start game...',
-                  style: Theme.of(context).textTheme.headline4),
+              child: Text('Start game...', style: Theme.of(context).textTheme.headline4),
               onPressed: () => _handleStartGame(context),
             )
           ],
@@ -340,13 +317,8 @@ class Question {
     for (var x in json['incorrect_answers']) {
       incorrectAnswers.add(unescape.convert(x.toString()));
     }
-    return Question(
-        unescape.convert(json['question']),
-        unescape.convert(json['correct_answer']),
-        incorrectAnswers,
-        json['category'],
-        json['difficulty'],
-        json['type']);
+    return Question(unescape.convert(json['question']), unescape.convert(json['correct_answer']), incorrectAnswers, json['category'],
+        json['difficulty'], json['type']);
   }
 }
 
@@ -388,18 +360,12 @@ class QuestionBank {
     // fetch token for API, so that questions won't be send twice
     _fetchSessionToken()
         .then((value) => {
-              if (value.statusCode == 200)
-                {_parseTokenData(value.body)}
-              else
-                {throw Exception('Failed to fetch token from API!')}
+              if (value.statusCode == 200) {_parseTokenData(value.body)} else {throw Exception('Failed to fetch token from API!')}
             })
         .whenComplete(() => {
               // fetch categories from API (does not need the token!)
               _fetchCategoriesList().then((value) => {
-                    if (value.statusCode == 200)
-                      {_parseCategoryData(value.body)}
-                    else
-                      {throw Exception('Failed to fetch token from API!')}
+                    if (value.statusCode == 200) {_parseCategoryData(value.body)} else {throw Exception('Failed to fetch token from API!')}
                   })
             });
   }
@@ -410,23 +376,20 @@ class QuestionBank {
   }
 
   Future<Response> _fetchSessionToken() {
-    developer.log('Getting token from OpenTDB API...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Getting token from OpenTDB API...', name: 'org.freenono.mundaneQuest.main');
     const String url = 'https://opentdb.com/api_token.php?command=request';
     Future<http.Response> response = http.get(Uri.parse(url));
     return response;
   }
 
   Future<Response> _fetchCategoriesList() {
-    developer.log('Getting categories from OpenTDB API...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Getting categories from OpenTDB API...', name: 'org.freenono.mundaneQuest.main');
     const String url = 'https://opentdb.com/api_category.php';
     Future<Response> response = http.get(Uri.parse(url));
     return response;
   }
 
-  Future<QuestionBundle> _fetchQuestions(int amount, int category,
-      {String difficulty = '', String type = 'multiple'}) {
+  Future<QuestionBundle> _fetchQuestions(int amount, int category, {String difficulty = '', String type = 'multiple'}) {
     // use default value for difficulty, that has been loaded from file
     if (difficulty.isEmpty) {
       difficulty = defaultQuestionDifficulty;
@@ -439,20 +402,17 @@ class QuestionBank {
   }
 
   void _parseTokenData(String text) {
-    developer.log('Parsing token from OpenTDB API...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Parsing token from OpenTDB API...', name: 'org.freenono.mundaneQuest.main');
     Map<String, dynamic> jsonInput = jsonDecode(text);
     if (jsonInput['response_code'] == 0) {
       token = jsonInput['token'];
     } else {
-      developer.log('Got error code from OpenTDB API!',
-          name: 'org.freenono.mundaneQuest.main');
+      developer.log('Got error code from OpenTDB API!', name: 'org.freenono.mundaneQuest.main');
     }
   }
 
   void _parseCategoryData(String text) {
-    developer.log('Parsing categories from OpenTDB API...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Parsing categories from OpenTDB API...', name: 'org.freenono.mundaneQuest.main');
     Map<String, dynamic> jsonInput = jsonDecode(text);
     for (var c in jsonInput['trivia_categories']) {
       // data from API: {"id":9,"name":"General Knowledge"}
@@ -461,8 +421,7 @@ class QuestionBank {
   }
 
   QuestionBundle _parseQuestionData(String text) {
-    developer.log('Parsing questions from API: $text',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Parsing questions from API: $text', name: 'org.freenono.mundaneQuest.main');
 
     List<Question> newQuestions = <Question>[];
     Map<String, dynamic> jsonInput = jsonDecode(text);
@@ -472,13 +431,9 @@ class QuestionBank {
         newQuestions.add(Question.fromJson(question));
       }
     } else if (jsonInput['response_code'] == 1) {
-      developer.log(
-          'Got error code 1 from OpenTDB API while parsing questions!',
-          name: 'org.freenono.mundaneQuest.main');
+      developer.log('Got error code 1 from OpenTDB API while parsing questions!', name: 'org.freenono.mundaneQuest.main');
     } else {
-      developer.log(
-          'Got some error code from OpenTDB API while parsing questions!',
-          name: 'org.freenono.mundaneQuest.main');
+      developer.log('Got some error code from OpenTDB API while parsing questions!', name: 'org.freenono.mundaneQuest.main');
     }
     currentBundle = QuestionBundle(newQuestions);
     return currentBundle;
@@ -486,20 +441,15 @@ class QuestionBank {
 
   Future<QuestionBundle> switchCategory() {
     var rng = Random();
-    int newCategory =
-        categories.keys.elementAt(rng.nextInt(categories.keys.length));
+    int newCategory = categories.keys.elementAt(rng.nextInt(categories.keys.length));
     currentCategory = newCategory;
-    developer.log('Switched category to: ${categories[currentCategory]}',
-        name: 'org.freenono.mundaneQuest.main');
-    return _fetchQuestions(amountQuestionsFromAPI, currentCategory,
-        difficulty: 'easy', type: 'multiple');
+    developer.log('Switched category to: ${categories[currentCategory]}', name: 'org.freenono.mundaneQuest.main');
+    return _fetchQuestions(amountQuestionsFromAPI, currentCategory, difficulty: 'easy', type: 'multiple');
   }
 }
 
 class PlayGameWidget extends StatefulWidget {
-  const PlayGameWidget(
-      {Key? key, required this.listOfPlayerNames, required this.questionBank})
-      : super(key: key);
+  const PlayGameWidget({Key? key, required this.listOfPlayerNames, required this.questionBank}) : super(key: key);
 
   final Iterable<String> listOfPlayerNames;
   final QuestionBank questionBank;
@@ -515,8 +465,7 @@ enum GameState {
   gameEnded,
 }
 
-class _PlayGameState extends State<PlayGameWidget>
-    with TickerProviderStateMixin {
+class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin {
   late QuestionBundle currentQuestionBundle;
 
   final Map<String, int> playerPoints = {};
@@ -544,8 +493,7 @@ class _PlayGameState extends State<PlayGameWidget>
 
   @override
   void initState() {
-    developer.log('Initializing state of PlayGameWidget.',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Initializing state of PlayGameWidget.', name: 'org.freenono.mundaneQuest.main');
 
     loadConfiguration();
 
@@ -571,8 +519,7 @@ class _PlayGameState extends State<PlayGameWidget>
       if (gameState == GameState.showQuestion) {
         setState(() {
           if (currentQuestionStartTime != 0) {
-            gameProgress =
-                (gameTimer.tick - currentQuestionStartTime) / gameTime;
+            gameProgress = (gameTimer.tick - currentQuestionStartTime) / gameTime;
             if (timer.tick - currentQuestionStartTime > gameTime) {
               currentQuestionStartTime = 0;
               _showCorrectAnswer();
@@ -631,18 +578,15 @@ class _PlayGameState extends State<PlayGameWidget>
     // if new questions have to be fetched, load the next own after loading has finished
     do {
       await widget.questionBank.switchCategory().whenComplete(() => {
-            developer.log('Switching of category completed.',
-                name: 'org.freenono.mundaneQuest.main'),
+            developer.log('Switching of category completed.', name: 'org.freenono.mundaneQuest.main'),
             currentQuestionBundle = widget.questionBank.currentBundle,
           });
     } while (currentQuestionBundle.questions.isEmpty);
-    developer.log('After while loop!!!',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('After while loop!!!', name: 'org.freenono.mundaneQuest.main');
   }
 
   void _loadNextQuestion() {
-    developer.log('Starting to load next question...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Starting to load next question...', name: 'org.freenono.mundaneQuest.main');
 
     setState(() {
       // fill out question and answers
@@ -656,8 +600,7 @@ class _PlayGameState extends State<PlayGameWidget>
       // find next random player, that has not played in this round yet
       String nextPlayer = '';
       do {
-        nextPlayer = widget.listOfPlayerNames
-            .elementAt(rng.nextInt(widget.listOfPlayerNames.length));
+        nextPlayer = widget.listOfPlayerNames.elementAt(rng.nextInt(widget.listOfPlayerNames.length));
       } while (currentRoundPlayers.contains(nextPlayer));
       currentPlayer = nextPlayer;
       currentRoundPlayers.add(currentPlayer);
@@ -669,8 +612,7 @@ class _PlayGameState extends State<PlayGameWidget>
   }
 
   void _playNextQuestion() {
-    developer.log('Starting to play next question...',
-        name: 'org.freenono.mundaneQuest.main');
+    developer.log('Starting to play next question...', name: 'org.freenono.mundaneQuest.main');
 
     // do nothing anymore, if game has ended already
     if (gameState == GameState.gameEnded) {
@@ -678,10 +620,8 @@ class _PlayGameState extends State<PlayGameWidget>
     }
 
     // check whether the last round was played
-    if (currentRound == roundsPerGame &&
-        currentRoundPlayers.length == widget.listOfPlayerNames.length) {
-      developer.log('Last round ended!',
-          name: 'org.freenono.mundaneQuest.main');
+    if (currentRound == roundsPerGame && currentRoundPlayers.length == widget.listOfPlayerNames.length) {
+      developer.log('Last round ended!', name: 'org.freenono.mundaneQuest.main');
       setState(() {
         gameState = GameState.gameEnded;
       });
@@ -690,9 +630,7 @@ class _PlayGameState extends State<PlayGameWidget>
       Future.delayed(Duration(seconds: defaultDelayTime), () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  ScoreBoardWidget(playerPoints: playerPoints)),
+          MaterialPageRoute(builder: (context) => ScoreBoardWidget(playerPoints: playerPoints)),
         );
       });
     } else {
@@ -726,8 +664,7 @@ class _PlayGameState extends State<PlayGameWidget>
     setState(() {
       gameState = GameState.evalAnswer;
     });
-    waitAfterAnswerDelay =
-        Future.delayed(Duration(seconds: defaultDelayTime), () {
+    waitAfterAnswerDelay = Future.delayed(Duration(seconds: defaultDelayTime), () {
       _playNextQuestion();
     });
   }
@@ -735,8 +672,7 @@ class _PlayGameState extends State<PlayGameWidget>
   void _checkGivenAnswer(String chosenAnswer) {
     if (chosenAnswer == currentQuestion!.correctAnswer) {
       setState(() {
-        playerPoints[currentPlayer] =
-            playerPoints[currentPlayer]! + currentQuestion!.getPoints();
+        playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
       });
     }
     currentQuestionStartTime = 0;
@@ -765,8 +701,7 @@ class _PlayGameState extends State<PlayGameWidget>
           const SizedBox(
             height: 25,
           ),
-          Text('Points: ${playerPoints[player]}',
-              style: Theme.of(context).textTheme.headline5),
+          Text('Points: ${playerPoints[player]}', style: Theme.of(context).textTheme.headline5),
         ]),
       );
       i++;
@@ -796,11 +731,9 @@ class _PlayGameState extends State<PlayGameWidget>
                     width: 200,
                     child: Text(answer),
                   ),
-                  style: gameState == GameState.evalAnswer ||
-                          gameState == GameState.gameEnded
+                  style: gameState == GameState.evalAnswer || gameState == GameState.gameEnded
                       ? ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.green),
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
                         )
                       : const ButtonStyle(),
                   onPressed: () => _checkGivenAnswer(answer),
@@ -816,11 +749,9 @@ class _PlayGameState extends State<PlayGameWidget>
                     width: 200,
                     child: Text(answer),
                   ),
-                  style: gameState == GameState.evalAnswer ||
-                          gameState == GameState.gameEnded
+                  style: gameState == GameState.evalAnswer || gameState == GameState.gameEnded
                       ? ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.red),
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
                         )
                       : const ButtonStyle(),
                   onPressed: () => _checkGivenAnswer(answer),
@@ -845,8 +776,7 @@ class _PlayGameState extends State<PlayGameWidget>
         Row(children: [
           Padding(
             padding: const EdgeInsets.all(50),
-            child: Text('Category: ${currentQuestion?.category ?? ''}',
-                style: Theme.of(context).textTheme.headline5),
+              child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
           ),
           Expanded(child: Container()),
           /*Padding(
@@ -856,23 +786,19 @@ class _PlayGameState extends State<PlayGameWidget>
           Expanded(child: Container()),*/
           Padding(
             padding: const EdgeInsets.all(50),
-            child: Text('Current round: $currentRound',
-                style: Theme.of(context).textTheme.headline5),
+              child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
           ),
           Expanded(child: Container()),
           Padding(
             padding: const EdgeInsets.all(50),
-            child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}',
-                style: Theme.of(context).textTheme.headline5),
+              child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
           ),
         ]),
         Expanded(child: Container()),
         Padding(
           padding: const EdgeInsets.all(20),
           child: Text(
-              gameState != GameState.readyPlayers
-                  ? 'Question:\n' + (currentQuestion?.questionText ?? '')
-                  : 'Loading Questions...',
+                gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : 'Loading Questions...',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headline3),
         ),
@@ -897,8 +823,7 @@ class _PlayGameState extends State<PlayGameWidget>
 }
 
 class ScoreBoardWidget extends StatefulWidget {
-  const ScoreBoardWidget({Key? key, required this.playerPoints})
-      : super(key: key);
+  const ScoreBoardWidget({Key? key, required this.playerPoints}) : super(key: key);
 
   final Map<String, int> playerPoints;
 
@@ -925,8 +850,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
         return Colors.yellowAccent;
       } else if (widget.playerPoints[player] == sortedPoints[1]) {
         return Colors.grey;
-      } else if (sortedPoints.length > 2 &&
-          widget.playerPoints[player] == sortedPoints[2]) {
+      } else if (sortedPoints.length > 2 && widget.playerPoints[player] == sortedPoints[2]) {
         return Colors.brown;
       } else {
         return Colors.white;
@@ -943,16 +867,9 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
       scoreFields.add(Padding(
           padding: const EdgeInsets.all(20),
           child: Column(children: [
-            Text('Player: $player',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline3!
-                    .apply(backgroundColor: _getColorForPlayer(player))),
+            Text('Player: $player', style: Theme.of(context).textTheme.headline3!.apply(backgroundColor: _getColorForPlayer(player))),
             Text('Points: ${widget.playerPoints[player]}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline4!
-                    .apply(backgroundColor: _getColorForPlayer(player))),
+                style: Theme.of(context).textTheme.headline4!.apply(backgroundColor: _getColorForPlayer(player))),
           ])));
     }
 
