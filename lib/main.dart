@@ -738,8 +738,45 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     return playerButtons;
   }
 
+  String getAnswerButtonText(i, answer) {
+    var buttonChar = '';
+    if (gamepadPresent) {
+      switch (i) {
+        case 0:
+          buttonChar = 'X';
+          break;
+        case 1:
+          buttonChar = 'O';
+          break;
+        case 2:
+          buttonChar = 'D';
+          break;
+        case 3:
+          buttonChar = 'A';
+          break;
+      }
+    } else {
+      switch (i) {
+        case 0:
+          buttonChar = '1';
+          break;
+        case 1:
+          buttonChar = '2';
+          break;
+        case 2:
+          buttonChar = '3';
+          break;
+        case 3:
+          buttonChar = '4';
+          break;
+      }
+    }
+    return '$buttonChar: $answer';
+  }
+
   List<Widget> _buildAnswerButtons() {
     List<Widget> answerButtons = [];
+    int i = 0;
 
     // build list with widgets for all answers
     answerButtons.add(Expanded(child: Container()));
@@ -753,7 +790,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
               : ElevatedButton(
                   child: SizedBox(
                     width: 200,
-                    child: Text(answer),
+                    child: Text(getAnswerButtonText(i, answer), style: Theme.of(context).textTheme.headline5),
                   ),
                   style: gameState == GameState.evalAnswer || gameState == GameState.gameEnded
                       ? ButtonStyle(
@@ -771,7 +808,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
               : ElevatedButton(
                   child: SizedBox(
                     width: 200,
-                    child: Text(answer),
+                    child: Text(getAnswerButtonText(i, answer), style: Theme.of(context).textTheme.headline5),
                   ),
                   style: gameState == GameState.evalAnswer || gameState == GameState.gameEnded
                       ? ButtonStyle(
@@ -783,6 +820,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
         );
       }
       answerButtons.add(pb);
+      i++;
     }
     answerButtons.add(Expanded(child: Container()));
 
@@ -795,7 +833,21 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
       appBar: AppBar(
         title: const Text('Let\'s play Mundane Quest!'),
       ),
-      body: Center(
+      body: RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: (RawKeyEvent keyEvent) {
+          if (keyEvent.character == '1') {
+            _checkGivenAnswer(answers[0]);
+          } else if (keyEvent.character == '2') {
+            _checkGivenAnswer(answers[1]);
+          } else if (keyEvent.character == '3') {
+            _checkGivenAnswer(answers[2]);
+          } else if (keyEvent.character == '4') {
+            _checkGivenAnswer(answers[3]);
+          }
+        },
+        child: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Row(children: [
           Padding(
@@ -835,6 +887,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           semanticsLabel: 'Linear progress indicator',
         ),
       ])),
+      ),
     );
   }
 
