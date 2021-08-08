@@ -41,12 +41,38 @@ class MundaneQuestHomePage extends StatefulWidget {
 
 class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
   @override
+  void initState() {
+    developer.log('Starting Mundane Quest...');
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
+      body: RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: (RawKeyEvent keyEvent) {
+          print(
+              '${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
+          if (keyEvent.character == 'q') {
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+          } else if (keyEvent.character == 'h') {
+            developer.log('Help menu called by key press.');
+          } else if (keyEvent.character == 's') {
+            developer.log('Settings menu called by key press.');
+          } else if (keyEvent.character == 'p') {
+            developer.log('Game started by key press.');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const StartGameDialogWidget()),
+            );
+          }
+        },
+        child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -65,8 +91,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
-                  child: Text('Start standard game...',
-                      style: Theme.of(context).textTheme.headline5),
+                    child: Text('Play game (p)', style: Theme.of(context).textTheme.headline5),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -85,8 +110,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
-                  child: Text('Change settings...',
-                      style: Theme.of(context).textTheme.headline5),
+                    child: Text('Change settings (s)', style: Theme.of(context).textTheme.headline5),
                   onPressed: () {},
                 ),
               ),
@@ -100,8 +124,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
-                  child: Text('Get help...',
-                      style: Theme.of(context).textTheme.headline5),
+                    child: Text('Get help (h)', style: Theme.of(context).textTheme.headline5),
                   onPressed: () {},
                 ),
               ),
@@ -115,8 +138,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
                   ),
-                  child: Text('Quit game...',
-                      style: Theme.of(context).textTheme.headline5),
+                    child: Text('Quit game (q)', style: Theme.of(context).textTheme.headline5),
                   // exit app programmatically: https://stackoverflow.com/a/49067313
                     onPressed: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
                 ),
@@ -124,6 +146,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -217,6 +240,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
             SizedBox(
                 width: 500,
                 child: TextField(
+                  autofocus: no == 1 ? true : false,
                   controller: element,
                   decoration: InputDecoration(border: const OutlineInputBorder(), hintText: 'Enter name for player $no'),
                 )),
