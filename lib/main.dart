@@ -4,8 +4,8 @@ import 'dart:developer' as developer;
 import 'dart:io' show Platform;
 import 'dart:math';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +16,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:desktop_window/desktop_window.dart';
 
 // TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
 //import '' if (dart.library.html) 'dart:html' as html;
@@ -71,6 +72,11 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
   @override
   void initState() {
     developer.log('Starting Mundane Quest...');
+
+    if (!kIsWeb && Platform.isLinux) {
+      DesktopWindow.setWindowSize(const Size(1400, 800));
+    }
+
     super.initState();
   }
 
@@ -92,6 +98,12 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
             developer.log('Help menu called by key press.');
           } else if (keyEvent.character == 's') {
             developer.log('Settings menu called by key press.');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsWidget()),
+            );
+          } else if (keyEvent.character == 'g') {
+            developer.log('Solo game menu called by key press.');
           } else if (keyEvent.character == 'p') {
             developer.log('Game started by key press.');
             Navigator.push(
@@ -109,7 +121,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                 'Mundane Quest',
                 style: Theme.of(context).textTheme.headline2,
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 50),
               ConstrainedBox(
                 constraints: const BoxConstraints.tightFor(width: 400),
                 child: Padding(
@@ -117,7 +129,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
                     child: Text('Play game (p)', style: Theme.of(context).textTheme.headline5),
                     onPressed: () {
@@ -136,7 +148,21 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
+                    ),
+                    child: Text('Play solo game (g)', style: Theme.of(context).textTheme.headline5),
+                    onPressed: () {},
+                  ),
+                ),
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
                     child: Text('Change settings (s)', style: Theme.of(context).textTheme.headline5),
                     onPressed: () {
@@ -155,7 +181,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
                     child: Text('Get help (h)', style: Theme.of(context).textTheme.headline5),
                     onPressed: () {},
@@ -169,7 +195,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                   child: ElevatedButton(
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                      padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
                     child: Text('Quit game (q)', style: Theme.of(context).textTheme.headline5),
                     // exit app programmatically: https://stackoverflow.com/a/49067313
@@ -267,10 +293,16 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ],
       ),
       SettingsGroup(
+        title: 'UI',
+        children: [
+          ColorPickerSettingsTile(title: 'What color should the app bar have?', settingKey: 'appBarColor'),
+        ],
+      ),
+      SettingsGroup(
         title: 'Audio',
         children: [
           SwitchSettingsTile(
-            settingKey: 'audio-activated',
+            settingKey: 'audioActivated',
             title: 'Should audio be activated?',
             leading: const Icon(Icons.audiotrack),
           ),
