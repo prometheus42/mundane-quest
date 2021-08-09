@@ -246,7 +246,14 @@ class _SettingsWidgetState extends State<SettingsWidget> {
               settingKey: 'defaultQuestionDifficulty',
               selected: 'easy',
               leading: const Icon(Icons.star_border),
-              values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'})
+              values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
+          TextInputSettingsTile(
+            title: 'Points per Question',
+            settingKey: 'pointsPerQuestion',
+            initialValue: '100',
+            keyboardType: TextInputType.number,
+            //autoValidateMode: ,
+          )
         ],
       ),
       SettingsGroup(
@@ -425,6 +432,8 @@ class Question {
   final String difficulty;
   final String type;
 
+  static int pointsPerQuestion = 0;
+
   Question(
     this.questionText,
     this.correctAnswer,
@@ -432,7 +441,12 @@ class Question {
     this.category,
     this.difficulty,
     this.type,
-  );
+  ) {
+    if (pointsPerQuestion == 0) {
+      Future prefs = SharedPreferences.getInstance();
+      prefs.then((value) => {pointsPerQuestion = int.parse(value.getString('pointsPerQuestion'))});
+    }
+  }
 
   @override
   String toString() {
@@ -446,11 +460,13 @@ class Question {
 
   int getPoints() {
     if (difficulty == 'easy') {
-      return 100;
+      return pointsPerQuestion;
+    } else if (difficulty == 'medium') {
+      return 2 * pointsPerQuestion;
     } else if (difficulty == 'hard') {
-      return 200;
+      return 3 * pointsPerQuestion;
     } else {
-      return 100;
+      return pointsPerQuestion;
     }
   }
 
