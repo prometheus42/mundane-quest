@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io' show Platform;
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,22 +14,8 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-//import 'dart:io' show Platform;
-//import 'package:flutter/foundation.dart' show kIsWeb;
-// if (Platform.isAndroid) {
-//   // Android-specific code
-// } else if (Platform.isLinux) {
-//   // Linux-specific code
-// }
-//
-// if (kIsWeb) {
-//   // running on the web!
-// } else {
-//   // NOT running on the web! You can check for additional platforms here.
-// }
-// Source: https://stackoverflow.com/a/50744481
 
 // TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
 //import '' if (dart.library.html) 'dart:html' as html;
@@ -455,7 +444,7 @@ class Question {
   ) {
     if (pointsPerQuestion == 0) {
       Future prefs = SharedPreferences.getInstance();
-      prefs.then((value) => {pointsPerQuestion = int.parse(value.getString('pointsPerQuestion'))});
+      prefs.then((value) => {pointsPerQuestion = int.parse(value.getString('pointsPerQuestion') ?? '100')});
     }
   }
 
@@ -680,11 +669,21 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   final List<bool> gamePadButtons = [];
   bool gamepadPresent = false;
 
+  late AudioPlayer player;
+
   @override
   void initState() {
     developer.log('Initializing state of PlayGameWidget.', name: 'org.freenono.mundaneQuest.main');
 
     loadConfiguration();
+
+    // prepare audio support, source: https://stackoverflow.com/a/50744481
+    if (kIsWeb || !Platform.isLinux) {
+      player = AudioPlayer();
+    }
+    // player.setAsset('assets/audio/bgm.mp3').whenComplete(() => {
+    //   player.play()
+    // });
 
     // wait for some time to allow all players to get ready...
     GameState gameState = GameState.readyPlayers;
@@ -897,9 +896,16 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   void _checkGivenAnswer(String chosenAnswer) {
     if (chosenAnswer == currentQuestion!.correctAnswer) {
+      if (kIsWeb || !Platform.isLinux) {
+        player.setAsset('assets/audio/success.mp3').whenComplete(() => {player.play()});
+      }
       setState(() {
         playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
       });
+    } else {
+      if (kIsWeb || !Platform.isLinux) {
+        player.setAsset('assets/audio/failure.mp3').whenComplete(() => {player.play()});
+      }
     }
     currentQuestionStartTime = 0;
     _showCorrectAnswer();
@@ -914,7 +920,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
       var pb = Padding(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Text('Player ${i + 1}'),
+          Text('Player ${i + 1}', style: Theme.of(context).textTheme.headline5),
           const SizedBox(
             height: 25,
           ),
@@ -933,7 +939,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
             duration: const Duration(seconds: 2),
             prefix: 'Points: ',
             textStyle: const TextStyle(
-              fontSize: 50,
+              fontSize: 40,
               color: Colors.black45,
             ),
           ),
@@ -1102,6 +1108,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   @override
   void dispose() {
     saveConfiguration();
+    player.dispose();
     _isRunning = false;
     gamepadTimer.cancel();
     super.dispose();
