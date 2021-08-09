@@ -682,13 +682,13 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   Color currentBackgroundColor = Colors.lightGreenAccent;
   final List<Color> listOfColors = [
-    Colors.amberAccent,
-    Colors.lightBlueAccent,
-    Colors.lightGreenAccent,
-    Colors.limeAccent,
-    Colors.greenAccent,
-    Colors.tealAccent,
-    Colors.deepOrangeAccent
+    Colors.amberAccent.shade100,
+    Colors.lightBlueAccent.shade100,
+    Colors.lightGreenAccent.shade100,
+    Colors.limeAccent.shade100,
+    Colors.greenAccent.shade100,
+    Colors.tealAccent.shade100,
+    Colors.deepOrangeAccent.shade100
   ];
 
   late Future readyDelay;
