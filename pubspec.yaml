@@ -29,13 +29,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.17.0
+
   http: ^0.13.3
   # The following adds the Cupertino Icons font to your application.
   cupertino_icons: ^1.0.2
   html_unescape: ^2.0.0
   shared_preferences: ^2.0.6
   flutter_settings_screens: ^0.2.2+1
-  js: ^0.6.3
+  animated_flip_counter: ^0.1.2
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +67,8 @@ flutter:
   assets:
     - assets/logo.png
   #   - images/a_dot_ham.jpeg
+
+  generate: true
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

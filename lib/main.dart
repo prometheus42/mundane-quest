@@ -51,6 +51,15 @@ class MundaneQuest extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mundane Quest',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('de', 'DE'),
+      ],
       theme: ThemeData(
         primarySwatch: Colors.cyan,
         scaffoldBackgroundColor: Colors.lightGreenAccent,

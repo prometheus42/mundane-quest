@@ -20,3 +20,4 @@ https://opentdb.com/api_config.php.
 * https://pub.dev/packages/html_unescape
 * https://pub.dev/packages/shared_preferences
 * https://pub.dev/packages/flutter_settings_screens
+* https://pub.dev/packages/animated_flip_counter
