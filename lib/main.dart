@@ -632,6 +632,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   int defaultDelayTime = 4;
   int defaultReadyTime = 8;
 
+  Color currentBackgroundColor = Colors.lightGreenAccent;
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
   var rng = Random();
@@ -825,6 +826,17 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           gameState = GameState.readyPlayers;
         });
         // reset round, change category and start next round
+        List<Color> listOfColors = [
+          Colors.amberAccent,
+          Colors.lightBlueAccent,
+          Colors.lightGreenAccent,
+          Colors.limeAccent,
+          Colors.greenAccent,
+          Colors.tealAccent,
+          Colors.deepOrangeAccent
+        ];
+        listOfColors.shuffle();
+        currentBackgroundColor = listOfColors.first;
         currentRoundPlayers.clear();
         currentRound++;
         _loadQuestionBundle();
@@ -886,7 +898,24 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           const SizedBox(
             height: 25,
           ),
-          Text('Points: ${playerPoints[player]}', style: Theme.of(context).textTheme.headline5),
+          AnimatedFlipCounter(
+            value: playerPoints[player]!.toDouble(),
+            duration: const Duration(seconds: 2),
+            prefix: 'Points: ',
+            textStyle: const TextStyle(
+              fontSize: 50,
+              //fontWeight: FontWeight.bold,
+              //letterSpacing: -8.0,
+              color: Colors.black38,
+              // shadows: [
+              //   BoxShadow(
+              //     color: Colors.orange,
+              //     offset: Offset(8, 8),
+              //     blurRadius: 8,
+              //   ),
+              // ],
+            ),
+          ),
         ]),
       );
       i++;
@@ -991,6 +1020,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: currentBackgroundColor,
       appBar: AppBar(
         title: const Text('Let\'s play Mundane Quest!'),
       ),
@@ -1102,7 +1132,21 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
       scoreFields.add(Padding(
           padding: const EdgeInsets.all(20),
           child: Column(children: [
-            Text('Player: $player', style: Theme.of(context).textTheme.headline3!.apply(backgroundColor: _getColorForPlayer(player))),
+            Text('Player: $player',
+                style: Theme.of(context).textTheme.headline3!.apply(
+                  backgroundColor: _getColorForPlayer(player),
+                  //fontSize: 50,
+                  //fontWeightDelta: 1,
+                  //letterSpacing: -8.0,
+                  //color: Colors.blueGrey,
+                  shadows: [
+                    const BoxShadow(
+                      color: Colors.black12,
+                      offset: Offset(8, 8),
+                      blurRadius: 8,
+                    ),
+                  ],
+                )),
             Text('Points: ${widget.playerPoints[player]}',
                 style: Theme.of(context).textTheme.headline4!.apply(backgroundColor: _getColorForPlayer(player))),
           ])));
