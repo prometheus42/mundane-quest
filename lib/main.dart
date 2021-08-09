@@ -2,8 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
-// TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
-//import '' if (dart.library.html) 'dart:html' as html;
+
+import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //import 'dart:io' show Platform;
 //import 'package:flutter/foundation.dart' show kIsWeb;
@@ -20,13 +28,8 @@ import 'dart:math';
 // }
 // Source: https://stackoverflow.com/a/50744481
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:html_unescape/html_unescape.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
+//import '' if (dart.library.html) 'dart:html' as html;
 
 void main() {
   initSettings().then((_) {
@@ -83,7 +86,8 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
         focusNode: FocusNode(),
         autofocus: true,
         onKey: (RawKeyEvent keyEvent) {
-          developer.log('${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
+          developer.log(
+              '${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
           if (keyEvent.character == 'q') {
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           } else if (keyEvent.character == 'h') {
@@ -1012,11 +1016,6 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
               child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
             ),
             Expanded(child: Container()),
-            /*Padding(
-            padding: EdgeInsets.all(50),
-            child: Text('Current player: ${currentPlayer}', style: Theme.of(context).textTheme.headline5),
-          ),
-          Expanded(child: Container()),*/
             Padding(
               padding: const EdgeInsets.all(50),
               child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
@@ -1071,11 +1070,12 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
 
   @override
   void initState() {
-    var sortedPoints = widget.playerPoints.values.toList();
+    sortedPoints = widget.playerPoints.values.toList();
     sortedPoints.sort();
     sortedPoints = sortedPoints.reversed.toList();
 
     /// Navigator.pushReplacementNamed(context, '/');
+
     super.initState();
   }
 
