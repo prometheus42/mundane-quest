@@ -909,6 +909,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     List<Widget> playerButtons = [];
     int i = 0;
 
+    playerButtons.add(Expanded(child: Container()));
     for (var player in widget.listOfPlayerNames) {
       var pb = Padding(
         padding: const EdgeInsets.all(20),
@@ -942,8 +943,6 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
       playerButtons.add(pb);
       playerButtons.add(Expanded(child: Container()));
     }
-    // remove last Expanded object, which would move everything to the left
-    playerButtons.removeLast();
 
     return playerButtons;
   }
