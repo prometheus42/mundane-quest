@@ -207,71 +207,73 @@ class _SettingsWidgetState extends State<SettingsWidget> {
   @override
   Widget build(BuildContext context) {
     return SettingsScreen(title: "Application Settings", children: [
-      SettingsGroup(
-        title: 'Game',
-        children: [
-          SliderSettingsTile(
-            settingKey: 'gameTime',
-            title: 'Answer Time',
-            subtitle: 'How long should the players have to answer questions?',
-            defaultValue: 30,
-            min: 1.0,
-            max: 60.0,
-            step: 5,
-            leading: const Icon(Icons.timer),
-          ),
-          SliderSettingsTile(
-            settingKey: 'defaultDelayTime',
-            title: 'Delay Time',
-            subtitle: 'How long should the correct answer be shown?',
-            defaultValue: 4,
-            min: 1.0,
-            max: 20.0,
-            step: 1,
-            leading: const Icon(Icons.timer),
-          ),
-          SliderSettingsTile(
-            settingKey: 'defaultReadyTime',
-            title: 'Ready Time',
-            subtitle: 'How long should players have to ready themselves before answering?',
-            defaultValue: 8,
-            min: 1.0,
-            max: 20.0,
-            step: 1,
-            leading: const Icon(Icons.timer),
-          ),
-          SliderSettingsTile(
-            settingKey: 'roundsPerGame',
-            title: 'Rounds per Game',
-            subtitle: 'How many rounds should a game have?',
-            defaultValue: 7,
-            min: 1.0,
-            max: 10.0,
-            step: 1,
-            leading: const Icon(Icons.replay_circle_filled),
-          ),
-          RadioSettingsTile(
-              title: 'Difficulty',
-              settingKey: 'defaultQuestionDifficulty',
-              selected: 'easy',
-              leading: const Icon(Icons.star_border),
-              values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
-          TextInputSettingsTile(
-            title: 'Points per Question',
-            settingKey: 'pointsPerQuestion',
-            initialValue: '100',
-            keyboardType: TextInputType.number,
-            //autoValidateMode: ,
-          )
-        ],
-      ),
+      SettingsGroup(title: 'Game', children: [
+        SliderSettingsTile(
+          settingKey: 'gameTime',
+          title: 'Answer Time',
+          subtitle: 'How long should the players have to answer questions?',
+          defaultValue: 30,
+          min: 1.0,
+          max: 60.0,
+          step: 5,
+          leading: const Icon(Icons.timer),
+        ),
+        SliderSettingsTile(
+          settingKey: 'defaultDelayTime',
+          title: 'Delay Time',
+          subtitle: 'How long should the correct answer be shown?',
+          defaultValue: 4,
+          min: 1.0,
+          max: 20.0,
+          step: 1,
+          leading: const Icon(Icons.timer),
+        ),
+        SliderSettingsTile(
+          settingKey: 'defaultReadyTime',
+          title: 'Ready Time',
+          subtitle: 'How long should players have to ready themselves before answering?',
+          defaultValue: 8,
+          min: 1.0,
+          max: 20.0,
+          step: 1,
+          leading: const Icon(Icons.timer),
+        ),
+        SliderSettingsTile(
+          settingKey: 'roundsPerGame',
+          title: 'Rounds per Game',
+          subtitle: 'How many rounds should a game have?',
+          defaultValue: 7,
+          min: 1.0,
+          max: 10.0,
+          step: 1,
+          leading: const Icon(Icons.replay_circle_filled),
+        ),
+        // RadioSettingsTile(
+        // title: 'Difficulty',
+        // settingKey: 'defaultQuestionDifficulty',
+        // selected: 'easy',
+        // leading: const Icon(Icons.star_border),
+        // values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}
+        // ),
+        DropDownSettingsTile(title: 'Difficulty', settingKey: 'defaultQuestionDifficulty', selected: 'easy',
+            //leading: const Icon(Icons.star_border),
+            values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
+        TextInputSettingsTile(
+          title: 'Points per Question',
+          settingKey: 'pointsPerQuestion',
+          initialValue: '100',
+          //leading: const Icon(Icons.plus_one),
+          keyboardType: TextInputType.number,
+          //autoValidateMode: ,
+        ),
+      ]),
       SettingsGroup(
         title: 'Control',
         children: [
           SwitchSettingsTile(
             settingKey: 'gamepad-support',
             title: 'Should gamepad support be activated?',
-            leading: const Icon(Icons.gamepad),
+            leading: const Icon(Icons.sports_esports_outlined), //const Icon(Icons.gamepad),
           ),
         ],
       ),
@@ -1133,11 +1135,11 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
   Color _getColorForPlayer(player) {
     if (sortedPoints.isNotEmpty) {
       if (widget.playerPoints[player] == sortedPoints[0]) {
-        return Colors.yellowAccent;
+        return Colors.yellowAccent.shade400;
       } else if (widget.playerPoints[player] == sortedPoints[1]) {
-        return Colors.grey;
+        return Colors.grey.shade300;
       } else if (sortedPoints.length > 2 && widget.playerPoints[player] == sortedPoints[2]) {
-        return Colors.brown;
+        return Colors.brown.shade200;
       } else {
         return Colors.white;
       }
@@ -1151,26 +1153,54 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
 
     for (var player in widget.playerPoints.keys) {
       scoreFields.add(Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(children: [
-            Text('Player: $player',
-                style: Theme.of(context).textTheme.headline3!.apply(
-                  backgroundColor: _getColorForPlayer(player),
-                  //fontSize: 50,
-                  //fontWeightDelta: 1,
-                  //letterSpacing: -8.0,
-                  //color: Colors.blueGrey,
-                  shadows: [
-                    const BoxShadow(
-                      color: Colors.black12,
-                      offset: Offset(8, 8),
-                      blurRadius: 8,
-                    ),
-                  ],
-                )),
-            Text('Points: ${widget.playerPoints[player]}',
-                style: Theme.of(context).textTheme.headline4!.apply(backgroundColor: _getColorForPlayer(player))),
-          ])));
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              SizedBox(
+                child: Container(),
+                height: (sortedPoints.indexOf(widget.playerPoints[player]).toDouble()) * 100,
+              ),
+              OutlinedButton(
+                  child: SizedBox(
+                    width: 300,
+                    height: 300,
+                    child: Column(children: [
+                      Expanded(child: Container()),
+                      Text('$player',
+                          style: Theme.of(context).textTheme.headline3!.apply(
+                            backgroundColor: _getColorForPlayer(player),
+                            //fontSize: 50,
+                            //fontWeightDelta: 1,
+                            //letterSpacing: -8.0,
+                            //color: Colors.blueGrey,
+                            shadows: [
+                              const BoxShadow(
+                                color: Colors.black38,
+                                offset: Offset(4, 4),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          )),
+                      Expanded(child: Container()),
+                      OutlinedButton(
+                          child: Text('${widget.playerPoints[player]} Points', style: Theme.of(context).textTheme.headline3!),
+                          onPressed: () {},
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                            shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0), side: const BorderSide(color: Colors.white, width: 10.0))),
+                          )),
+                      Expanded(child: Container()),
+                    ]),
+                  ),
+                  onPressed: () {},
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(_getColorForPlayer(player)),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0), side: BorderSide(color: _getColorForPlayer(player)))),
+                  )),
+            ],
+          )));
     }
 
     return scoreFields;
