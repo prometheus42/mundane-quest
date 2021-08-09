@@ -658,6 +658,16 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   int defaultReadyTime = 8;
 
   Color currentBackgroundColor = Colors.lightGreenAccent;
+  final List<Color> listOfColors = [
+    Colors.amberAccent,
+    Colors.lightBlueAccent,
+    Colors.lightGreenAccent,
+    Colors.limeAccent,
+    Colors.greenAccent,
+    Colors.tealAccent,
+    Colors.deepOrangeAccent
+  ];
+
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
   var rng = Random();
@@ -851,17 +861,9 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           gameState = GameState.readyPlayers;
         });
         // reset round, change category and start next round
-        List<Color> listOfColors = [
-          Colors.amberAccent,
-          Colors.lightBlueAccent,
-          Colors.lightGreenAccent,
-          Colors.limeAccent,
-          Colors.greenAccent,
-          Colors.tealAccent,
-          Colors.deepOrangeAccent
-        ];
-        listOfColors.shuffle();
-        currentBackgroundColor = listOfColors.first;
+        var availableColors = listOfColors.where((element) => element != currentBackgroundColor).toList();
+        availableColors.shuffle();
+        currentBackgroundColor = availableColors.first;
         currentRoundPlayers.clear();
         currentRound++;
         _loadQuestionBundle();
@@ -907,7 +909,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
     for (var player in widget.listOfPlayerNames) {
       var pb = Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(20),
         child: Column(children: [
           Text('Player ${i + 1}'),
           const SizedBox(
@@ -929,16 +931,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
             prefix: 'Points: ',
             textStyle: const TextStyle(
               fontSize: 50,
-              //fontWeight: FontWeight.bold,
-              //letterSpacing: -8.0,
-              color: Colors.black38,
-              // shadows: [
-              //   BoxShadow(
-              //     color: Colors.orange,
-              //     offset: Offset(8, 8),
-              //     blurRadius: 8,
-              //   ),
-              // ],
+              color: Colors.black45,
             ),
           ),
         ]),
@@ -1045,7 +1038,6 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: currentBackgroundColor,
       appBar: AppBar(
         title: const Text('Let\'s play Mundane Quest!'),
       ),
@@ -1063,41 +1055,45 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
             _checkGivenAnswer(answers[3]);
           }
         },
-        child: Center(
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Row(children: [
-            Padding(
-              padding: const EdgeInsets.all(50),
-              child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
-            ),
+        child: AnimatedContainer(
+          color: currentBackgroundColor,
+          duration: const Duration(seconds: 2),
+          child: Center(
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Row(children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
+              ),
+              Expanded(child: Container()),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
+              ),
+              Expanded(child: Container()),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
+              ),
+            ]),
             Expanded(child: Container()),
             Padding(
-              padding: const EdgeInsets.all(50),
-              child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                  gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : 'Loading Questions...',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headline3),
             ),
+            Row(children: _buildAnswerButtons()),
             Expanded(child: Container()),
-            Padding(
-              padding: const EdgeInsets.all(50),
-              child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
+            Row(children: _buildPlayerButtons()),
+            LinearProgressIndicator(
+              value: gameProgress,
+              minHeight: 20,
+              semanticsLabel: 'Linear progress indicator',
             ),
-          ]),
-          Expanded(child: Container()),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-                gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : 'Loading Questions...',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headline3),
-          ),
-          Row(children: _buildAnswerButtons()),
-          Expanded(child: Container()),
-          Row(children: _buildPlayerButtons()),
-          LinearProgressIndicator(
-            value: gameProgress,
-            minHeight: 20,
-            semanticsLabel: 'Linear progress indicator',
-          ),
-        ])),
+          ])),
+        ),
       ),
     );
   }
@@ -1155,7 +1151,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
 
     for (var player in widget.playerPoints.keys) {
       scoreFields.add(Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(40),
           child: Column(children: [
             Text('Player: $player',
                 style: Theme.of(context).textTheme.headline3!.apply(
