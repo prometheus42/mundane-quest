@@ -5,6 +5,7 @@ import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:desktop_window/desktop_window.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +17,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:desktop_window/desktop_window.dart';
 
-// TODO: For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
+// TODO(prometheus42): For a better solution see: https://aschilken.medium.com/flutter-conditional-import-for-web-and-native-9ae6b5a5cd39
 //import '' if (dart.library.html) 'dart:html' as html;
 
 void main() {
@@ -402,6 +402,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
                 child: TextField(
                   autofocus: no == 1 ? true : false,
                   controller: element,
+                  maxLength: 20,
                   decoration: InputDecoration(border: const OutlineInputBorder(), hintText: 'Enter name for player $no'),
                 )),
             const SizedBox(width: 20),
@@ -454,6 +455,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
   }
 }
 
+// TODO(prometheus42): Move data classes to separate file.
 class Question {
   final String questionText;
   final String correctAnswer;
@@ -538,6 +540,7 @@ enum ReturnCode {
   tokenEmpty
 }
 
+// TODO(prometheus42): Implement two question bank classes, one online, the other one offline.
 class QuestionBank {
   String sessionToken = '';
   late QuestionBundle currentBundle;
@@ -661,26 +664,26 @@ enum GameState {
 class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin {
   late QuestionBundle currentQuestionBundle;
 
+  // information about players and the current player
   final Map<String, int> playerPoints = {};
   final List<String> playerReady = [];
   String currentPlayer = '';
   int currentRound = 1;
   final List<String> currentRoundPlayers = [];
 
+  // current question and the list of answers for that question
   Question? currentQuestion;
   List<String> answers = [];
-  int currentQuestionStartTime = 0;
-  double gameProgress = 0.0;
 
+  // current state and constants
   GameState gameState = GameState.readyPlayers;
-  late Timer gameTimer;
-  bool _isRunning = true;
   int gameTime = 30;
   int roundsPerGame = 8;
   int defaultDelayTime = 4;
   int defaultReadyTime = 8;
 
-  Color currentBackgroundColor = Colors.lightGreenAccent;
+  // UI parameters and helper variables
+  Color currentBackgroundColor = Colors.lightGreenAccent.shade100;
   final List<Color> listOfColors = [
     Colors.amberAccent.shade100,
     Colors.lightBlueAccent.shade100,
@@ -690,35 +693,51 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     Colors.tealAccent.shade100,
     Colors.deepOrangeAccent.shade100
   ];
+  String readyPlayersMessage = 'Ready Players...';
+  int readyPlayersMessageCounter = 0;
+  double gameProgress = 0.0;
 
+  // members concerning timing and delays
+  int currentQuestionStartTime = 0;
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
-  var rng = Random();
-
   late Timer gamepadTimer;
+  late Timer gameTimer;
+  var rng = Random();
 
   //final List<html.Gamepad> listOfGamepads = [];
   final List<bool> gamePadButtons = [];
   bool gamepadPresent = false;
 
-  late AudioPlayer player;
+  late AudioPlayer soundEffects;
+  late AudioPlayer backgroundMusic;
 
   @override
   void initState() {
     developer.log('Initializing state of PlayGameWidget.', name: 'org.freenono.mundaneQuest.main');
 
-    loadConfiguration();
+    // set points for all player to zero at begin of game
+    for (var player in widget.listOfPlayerNames) {
+      playerPoints[player] = 0;
+    }
+    GameState gameState = GameState.readyPlayers;
 
+    loadConfiguration().then((value) => initializeEverything());
+
+    super.initState();
+  }
+
+  void initializeEverything() {
     // prepare audio support, source: https://stackoverflow.com/a/50744481
     if (kIsWeb || !Platform.isLinux) {
-      player = AudioPlayer();
+      soundEffects = AudioPlayer();
+      // TODO(prometheus42): Fix background music.
+      // backgroundMusic.setAsset('assets/audio/bgm.mp3').whenComplete(() => {
+      //   backgroundMusic.play()
+      // });
     }
-    // player.setAsset('assets/audio/bgm.mp3').whenComplete(() => {
-    //   player.play()
-    // });
 
     // wait for some time to allow all players to get ready...
-    GameState gameState = GameState.readyPlayers;
     readyDelay = Future.delayed(Duration(seconds: defaultReadyTime), () {
       setState(() {
         gameState = GameState.showQuestion;
@@ -726,37 +745,13 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
       });
     });
 
-    // set points for all player to zero at begin of game
-    for (var player in widget.listOfPlayerNames) {
-      playerPoints[player] = 0;
-    }
-
     // run game timer
-    gameTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (!_isRunning) {
-        timer.cancel();
-      }
-      if (gameState == GameState.showQuestion) {
-        setState(() {
-          if (currentQuestionStartTime != 0) {
-            gameProgress = (gameTimer.tick - currentQuestionStartTime) / gameTime;
-            if (timer.tick - currentQuestionStartTime > gameTime) {
-              currentQuestionStartTime = 0;
-              _showCorrectAnswer();
-            }
-          }
-        });
-      }
-    });
+    gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) => _handleGameTimer(timer));
 
     // load a bundle of questions for the first round from a random category
     _loadQuestionBundle();
 
     //initializeGamepad();
-
-    saveConfiguration();
-
-    super.initState();
   }
 
   // void initializeGamepad() {
@@ -812,20 +807,43 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   //   });
   // }
 
-  void loadConfiguration() async {
-    final prefs = await SharedPreferences.getInstance();
-    gameTime = prefs.getDouble('gameTime')?.toInt() ?? 30;
-    roundsPerGame = prefs.getDouble('roundsPerGame')?.toInt() ?? 7;
-    defaultDelayTime = prefs.getDouble('defaultDelayTime')?.toInt() ?? 4;
-    defaultReadyTime = prefs.getDouble('defaultReadyTime')?.toInt() ?? 8;
+  void _handleGameTimer(Timer timer) {
+    developer.log('Current game state: $gameState');
+
+    if (gameState == GameState.showQuestion) {
+      setState(() {
+        // calculate number for progress bar if question is active
+        if (currentQuestionStartTime != 0) {
+          gameProgress = (gameTimer.tick - currentQuestionStartTime) / gameTime;
+          if (timer.tick - currentQuestionStartTime > gameTime) {
+            currentQuestionStartTime = 0;
+            _showCorrectAnswer();
+          }
+        }
+      });
+    }
+    if (gameState == GameState.readyPlayers) {
+      setState(() {
+        readyPlayersMessage += '${defaultReadyTime - 1 - readyPlayersMessageCounter}.';
+        readyPlayersMessageCounter++;
+      });
+    }
+    if (gameState == GameState.evalAnswer) {
+      setState(() {
+        // reset message to be shown before next questions
+        readyPlayersMessage = 'Ready Players...';
+        readyPlayersMessageCounter = 0;
+      });
+    }
   }
 
-  void saveConfiguration() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setDouble('gameTime', gameTime.toDouble());
-    prefs.setDouble('roundsPerGame', roundsPerGame.toDouble());
-    prefs.setDouble('defaultDelayTime', defaultDelayTime.toDouble());
-    prefs.setDouble('defaultReadyTime', defaultReadyTime.toDouble());
+  Future loadConfiguration() async {
+    return SharedPreferences.getInstance().then((prefs) => {
+          defaultReadyTime = prefs.getDouble('defaultReadyTime')?.toInt() ?? 8,
+          defaultDelayTime = prefs.getDouble('defaultDelayTime')?.toInt() ?? 4,
+          gameTime = prefs.getDouble('gameTime')?.toInt() ?? 30,
+          roundsPerGame = prefs.getDouble('roundsPerGame')?.toInt() ?? 7
+        });
   }
 
   void _loadQuestionBundle() async {
@@ -890,17 +908,21 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     } else {
       // check whether the first round begins or the last round has been finished
       if (currentRoundPlayers.length == widget.listOfPlayerNames.length) {
-        setState(() {
-          gameState = GameState.readyPlayers;
-        });
         // reset round, change category and start next round
         var availableColors = listOfColors.where((element) => element != currentBackgroundColor).toList();
         availableColors.shuffle();
+        // TODO(prometheus42): Make background color dependent on category.
         currentBackgroundColor = availableColors.first;
         currentRoundPlayers.clear();
         currentRound++;
+        // load questions for next round
         _loadQuestionBundle();
-        readyDelay = Future.delayed(Duration(seconds: defaultDelayTime), () {
+        // set state and wait for next question
+        setState(() {
+          print('switching to ready player!');
+          gameState = GameState.readyPlayers;
+        });
+        readyDelay = Future.delayed(Duration(seconds: defaultReadyTime), () {
           setState(() {
             gameState = GameState.showQuestion;
             _loadNextQuestion();
@@ -929,14 +951,14 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   void _checkGivenAnswer(String chosenAnswer) {
     if (chosenAnswer == currentQuestion!.correctAnswer) {
       if (kIsWeb || !Platform.isLinux) {
-        player.setAsset('assets/audio/success.mp3').whenComplete(() => {player.play()});
+        soundEffects.setAsset('assets/audio/success.mp3').whenComplete(() => {soundEffects.play()});
       }
       setState(() {
         playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
       });
     } else {
       if (kIsWeb || !Platform.isLinux) {
-        player.setAsset('assets/audio/failure.mp3').whenComplete(() => {player.play()});
+        soundEffects.setAsset('assets/audio/failure.mp3').whenComplete(() => {soundEffects.play()});
       }
     }
     currentQuestionStartTime = 0;
@@ -1118,10 +1140,9 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
             Expanded(child: Container()),
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text(
-                  gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : 'Loading Questions...',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headline3),
+              // TODO(prometheus42): Make questions fly into the screen.
+              child: Text(gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : readyPlayersMessage,
+                  textAlign: TextAlign.center, style: Theme.of(context).textTheme.headline3),
             ),
             Row(children: _buildAnswerButtons()),
             Expanded(child: Container()),
@@ -1139,9 +1160,8 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   @override
   void dispose() {
-    saveConfiguration();
-    player.dispose();
-    _isRunning = false;
+    soundEffects.dispose();
+    gameTimer.cancel();
     gamepadTimer.cancel();
     super.dispose();
   }
