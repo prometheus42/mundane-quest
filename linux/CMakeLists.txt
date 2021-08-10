@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
 set(BINARY_NAME "mundanequest")
-set(APPLICATION_ID "com.example.mundanequest")
+set(APPLICATION_ID "org.freenono.mundanequest")
 
 cmake_policy(SET CMP0063 NEW)
 

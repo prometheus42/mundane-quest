@@ -7,8 +7,13 @@ Mundane Quest is a simple question and answer game, not unlike Trivial Pursuit.
 This project can be build with Android Studio. Alternatively you can use the
 command line:
 
-    flutter build linux
-    flutter build web --base-href=/mq/
+    flutter build linux --no-sound-null-safety
+    flutter build web --base-href=/mq/ --no-sound-null-safety
+    flutter build apk --split-per-abi --no-sound-null-safety
+
+Or just use the build script, that creates the web, linux and Android version:
+
+    ./build_release.sh
 
 ## Dependencies
 

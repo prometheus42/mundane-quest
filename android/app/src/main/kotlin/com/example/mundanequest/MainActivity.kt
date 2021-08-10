@@ -1,4 +1,4 @@
-package com.example.mundanequest
+package org.freenono.mundanequest
 
 import io.flutter.embedding.android.FlutterActivity
 
