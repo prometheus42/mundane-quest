@@ -264,12 +264,11 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           leading: const Icon(Icons.replay_circle_filled),
         ),
         RadioSettingsTile(
-        title: 'Difficulty',
-        settingKey: 'defaultQuestionDifficulty',
-        selected: 'easy',
-        leading: const Icon(Icons.star_border),
-        values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}
-        ),
+            title: 'Difficulty',
+            settingKey: 'defaultQuestionDifficulty',
+            selected: 'easy',
+            leading: const Icon(Icons.star_border),
+            values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
         // DropDownSettingsTile(title: 'Difficulty', settingKey: 'defaultQuestionDifficulty', selected: 'easy',
         //     //leading: const Icon(Icons.star_border),
         //     values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
@@ -901,7 +900,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
       // output game score at end on score board widget
       Future.delayed(Duration(seconds: defaultDelayTime), () {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => ScoreBoardWidget(playerPoints: playerPoints)),
         );
@@ -1270,6 +1269,12 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
         appBar: AppBar(
           title: const Text('Score Board'),
           //automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).popUntil(ModalRoute.withName("/"));
+            },
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
@@ -1280,7 +1285,21 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
                 Expanded(child: Container()),
                 Row(children: _buildScoreFields()),
                 Expanded(child: Container()),
-              ])
+              ]),
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 400),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.00, bottom: 10.00),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                      padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
+                    ),
+                    child: Text('Back to main menu', style: Theme.of(context).textTheme.headline5),
+                    onPressed: () => Navigator.of(context).popUntil(ModalRoute.withName("/")),
+                  ),
+                ),
+              ),
             ],
           ),
         ));
