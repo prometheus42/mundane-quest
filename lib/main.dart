@@ -263,16 +263,16 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           step: 1,
           leading: const Icon(Icons.replay_circle_filled),
         ),
-        // RadioSettingsTile(
-        // title: 'Difficulty',
-        // settingKey: 'defaultQuestionDifficulty',
-        // selected: 'easy',
-        // leading: const Icon(Icons.star_border),
-        // values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}
-        // ),
-        DropDownSettingsTile(title: 'Difficulty', settingKey: 'defaultQuestionDifficulty', selected: 'easy',
-            //leading: const Icon(Icons.star_border),
-            values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
+        RadioSettingsTile(
+        title: 'Difficulty',
+        settingKey: 'defaultQuestionDifficulty',
+        selected: 'easy',
+        leading: const Icon(Icons.star_border),
+        values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}
+        ),
+        // DropDownSettingsTile(title: 'Difficulty', settingKey: 'defaultQuestionDifficulty', selected: 'easy',
+        //     //leading: const Icon(Icons.star_border),
+        //     values: const {'easy': 'easy', 'medium': 'medium', 'hard': 'hard'}),
         TextInputSettingsTile(
           title: 'Points per Question',
           settingKey: 'pointsPerQuestion',
@@ -593,6 +593,7 @@ class QuestionBank {
     // the category parameter is the id of the category, in the response each question contains the name of the category!
     var url =
         'https://opentdb.com/api.php?amount=$amount&category=$category&difficulty=$difficulty&type=$type&token=$token'; // &encode=url3986
+    developer.log('Fetching questions from API: $url', name: 'org.freenono.mundaneQuest.main');
     Future response = http.get(Uri.parse(url));
     return response.then((value) => _parseQuestionData(value.body));
   }
@@ -635,12 +636,12 @@ class QuestionBank {
     return currentBundle;
   }
 
-  Future<QuestionBundle> switchCategory() {
+  Future<QuestionBundle> switchCategory({String difficulty = '', String type = ''}) {
     var rng = Random();
     int newCategory = categories.keys.elementAt(rng.nextInt(categories.keys.length));
     currentCategory = newCategory;
     developer.log('Switched category to: ${categories[currentCategory]}', name: 'org.freenono.mundaneQuest.main');
-    return _fetchQuestions(amountQuestionsFromAPI, currentCategory, difficulty: 'easy', type: 'multiple');
+    return _fetchQuestions(amountQuestionsFromAPI, currentCategory, type: 'multiple');
   }
 }
 
@@ -720,7 +721,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     for (var player in widget.listOfPlayerNames) {
       playerPoints[player] = 0;
     }
-    GameState gameState = GameState.readyPlayers;
+    gameState = GameState.readyPlayers;
 
     loadConfiguration().then((value) => initializeEverything());
 
@@ -919,7 +920,6 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
         _loadQuestionBundle();
         // set state and wait for next question
         setState(() {
-          print('switching to ready player!');
           gameState = GameState.readyPlayers;
         });
         readyDelay = Future.delayed(Duration(seconds: defaultReadyTime), () {
@@ -1224,7 +1224,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
                     height: 300,
                     child: Column(children: [
                       Expanded(child: Container()),
-                      Text('$player',
+                      Text(player,
                           style: Theme.of(context).textTheme.headline3!.apply(
                             backgroundColor: _getColorForPlayer(player),
                             //fontSize: 50,
