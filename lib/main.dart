@@ -824,7 +824,10 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     }
     if (gameState == GameState.readyPlayers) {
       setState(() {
-        readyPlayersMessage += '${defaultReadyTime - 1 - readyPlayersMessageCounter}.';
+        int countdown = defaultReadyTime - 1 - readyPlayersMessageCounter;
+        if (countdown <= 3 && countdown >= 1) {
+          readyPlayersMessage += '$countdown...';
+        }
         readyPlayersMessageCounter++;
       });
     }
