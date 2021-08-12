@@ -1,6 +1,37 @@
 {
     "helloWorld": "Hello World!",
-    "@helloWorld": {
-      "description": "The conventional newborn programmer greeting"
-    }
+    "playGameMenu": "Play game (p)",
+    "playSoloGame": "Play solo game (g)",
+    "changeSettings": "Change settings (s)",
+    "getHelp": "Get help (h)",
+    "quitGame": "Quit game (q)",
+    "applicationSettings": "Application Settings",
+    "maximumNumberOfPlayers": "The maximum number of players is 5!",
+    "atLeastTwoPlayers": "You need at least 2 players!",
+    "doublePlayerName": "No player name shall be used twice!",
+    "playerNamesEmpty": "Some player names are empty!",
+    "enterPlayerName": "Enter name for player {no}",
+    "@enterPlayerName": {
+        "placeholders": {
+            "no": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "question": "Question",
+    "delete": "Delete",
+    "startNewGame": "Start a new game",
+    "addPlayerToGame": "Add players to the game",
+    "startGame": "Start game...",
+    "addPlayer": "Add player",
+    "readyPlayers": "Ready Players...",
+    "points": "Points",
+    "player": "Player",
+    "letsPlayMundaneQuest": "Let's play Mundane Quest!",
+    "category": "Category",
+    "currentRound": "Current round",
+    "difficulty": "Difficulty",
+    "scoreBoard": "Score Board",
+    "backToMainMenu": "Back to main menu"
 }

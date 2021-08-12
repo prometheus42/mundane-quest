@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:html_unescape/html_unescape.dart';
@@ -42,13 +43,14 @@ class MundaneQuest extends StatelessWidget {
     return MaterialApp(
       title: 'Mundane Quest',
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
         Locale('en', ''),
-        Locale('de', 'DE'),
+        Locale('de', ''),
       ],
       theme: ThemeData(
         primarySwatch: Colors.cyan,
@@ -131,7 +133,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Play game (p)', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.playGameMenu, style: Theme.of(context).textTheme.headline5),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -150,7 +152,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Play solo game (g)', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.playSoloGame, style: Theme.of(context).textTheme.headline5),
                     onPressed: () {},
                   ),
                 ),
@@ -164,7 +166,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Change settings (s)', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.changeSettings, style: Theme.of(context).textTheme.headline5),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -183,7 +185,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Get help (h)', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.getHelp, style: Theme.of(context).textTheme.headline5),
                     onPressed: () {},
                   ),
                 ),
@@ -197,7 +199,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Quit game (q)', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.quitGame, style: Theme.of(context).textTheme.headline5),
                     // exit app programmatically: https://stackoverflow.com/a/49067313
                     onPressed: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
                   ),
@@ -221,7 +223,7 @@ class SettingsWidget extends StatefulWidget {
 class _SettingsWidgetState extends State<SettingsWidget> {
   @override
   Widget build(BuildContext context) {
-    return SettingsScreen(title: "Application Settings", children: [
+    return SettingsScreen(title: AppLocalizations.of(context)!.applicationSettings, children: [
       SettingsGroup(title: 'Game', children: [
         SliderSettingsTile(
           settingKey: 'gameTime',
@@ -292,7 +294,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ],
       ),
       SettingsGroup(
-        title: 'UI',
+        title: 'User Interface',
         children: [
           ColorPickerSettingsTile(title: 'What color should the app bar have?', settingKey: 'appBarColor'),
         ],
@@ -332,7 +334,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
         final scaffold = ScaffoldMessenger.of(context);
         scaffold.showSnackBar(
           SnackBar(
-            content: const Text('The maximum number of players is 5!'),
+            content: Text(AppLocalizations.of(context)!.maximumNumberOfPlayers),
             action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
@@ -347,7 +349,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
     if (listOfPlayerNameControllers.length < 2) {
       scaffold.showSnackBar(
         SnackBar(
-          content: const Text('You need at least 2 players!'),
+          content: Text(AppLocalizations.of(context)!.atLeastTwoPlayers),
           action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
         ),
       );
@@ -357,14 +359,14 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
       if (listOfPlayerNames.toSet().length != listOfPlayerNames.length) {
         scaffold.showSnackBar(
           SnackBar(
-            content: const Text('No player name shall be used twice!'),
+            content: Text(AppLocalizations.of(context)!.doublePlayerName),
             action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
       } else if (listOfPlayerNames.any((element) => element.isEmpty)) {
         scaffold.showSnackBar(
           SnackBar(
-            content: const Text('Some player names are empty!'),
+            content: Text(AppLocalizations.of(context)!.playerNamesEmpty),
             action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
           ),
         );
@@ -402,7 +404,8 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
                   autofocus: no == 1 ? true : false,
                   controller: element,
                   maxLength: 20,
-                  decoration: InputDecoration(border: const OutlineInputBorder(), hintText: 'Enter name for player $no'),
+                  decoration:
+                      InputDecoration(border: const OutlineInputBorder(), hintText: AppLocalizations.of(context)!.enterPlayerName(no)),
                 )),
             const SizedBox(width: 20),
             ElevatedButton(
@@ -412,13 +415,13 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
                   });
                   developer.log('Removing player from roster...', name: 'org.freenono.mundaneQuest.main');
                 },
-                child: const Text('Delete'))
+                child: Text(AppLocalizations.of(context)!.delete))
           ])));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Start a new game'),
+        title: Text(AppLocalizations.of(context)!.startNewGame),
       ),
       body: Row(children: [
         Expanded(child: Container()),
@@ -427,7 +430,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text('Add players to the game', style: Theme.of(context).textTheme.headline3),
+              child: Text(AppLocalizations.of(context)!.addPlayerToGame, style: Theme.of(context).textTheme.headline3),
             ),
             const SizedBox(height: 60),
             Column(
@@ -438,7 +441,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
               style: ButtonStyle(
                 foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
               ),
-              child: Text('Start game...', style: Theme.of(context).textTheme.headline4),
+              child: Text(AppLocalizations.of(context)!.startGame, style: Theme.of(context).textTheme.headline4),
               onPressed: () => _handleStartGame(context),
             )
           ],
@@ -447,7 +450,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementPlayerCount,
-        tooltip: 'Add player',
+        tooltip: AppLocalizations.of(context)!.addPlayer,
         child: const Icon(Icons.add),
       ),
     );
@@ -693,7 +696,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     Colors.tealAccent.shade100,
     Colors.deepOrangeAccent.shade100
   ];
-  String readyPlayersMessage = 'Ready Players...';
+  String readyPlayersMessage = '';
   int readyPlayersMessageCounter = 0;
   double gameProgress = 0.0;
 
@@ -824,6 +827,9 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     }
     if (gameState == GameState.readyPlayers) {
       setState(() {
+        if (readyPlayersMessage.isEmpty) {
+          readyPlayersMessage = AppLocalizations.of(context)!.readyPlayers;
+        }
         int countdown = defaultReadyTime - 1 - readyPlayersMessageCounter;
         if (countdown <= 3 && countdown >= 1) {
           readyPlayersMessage += '$countdown...';
@@ -834,7 +840,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     if (gameState == GameState.evalAnswer) {
       setState(() {
         // reset message to be shown before next questions
-        readyPlayersMessage = 'Ready Players...';
+        readyPlayersMessage = AppLocalizations.of(context)!.readyPlayers;
         readyPlayersMessageCounter = 0;
       });
     }
@@ -978,7 +984,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
       var pb = Padding(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Text('Player ${i + 1}', style: Theme.of(context).textTheme.headline5),
+          Text(AppLocalizations.of(context)!.player + ' ${i + 1}', style: Theme.of(context).textTheme.headline5),
           const SizedBox(
             height: 25,
           ),
@@ -995,7 +1001,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           AnimatedFlipCounter(
             value: playerPoints[player]!.toDouble(),
             duration: const Duration(seconds: 2),
-            prefix: 'Points: ',
+            prefix: AppLocalizations.of(context)!.points + ': ',
             textStyle: const TextStyle(
               fontSize: 40,
               color: Colors.black45,
@@ -1104,7 +1110,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Let\'s play Mundane Quest!'),
+        title: Text(AppLocalizations.of(context)!.letsPlayMundaneQuest),
       ),
       body: RawKeyboardListener(
         focusNode: FocusNode(),
@@ -1128,25 +1134,31 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
             Row(children: [
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('Category: ${currentQuestion?.category ?? ''}', style: Theme.of(context).textTheme.headline5),
+                child: Text(AppLocalizations.of(context)!.category + ': ${currentQuestion?.category ?? ''}',
+                    style: Theme.of(context).textTheme.headline5),
               ),
               Expanded(child: Container()),
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('Current round: $currentRound', style: Theme.of(context).textTheme.headline5),
+                child: Text(AppLocalizations.of(context)!.currentRound + ': $currentRound', style: Theme.of(context).textTheme.headline5),
               ),
               Expanded(child: Container()),
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('Difficulty: ${currentQuestion?.difficulty ?? ''}', style: Theme.of(context).textTheme.headline5),
+                child: Text(AppLocalizations.of(context)!.difficulty + ': ${currentQuestion?.difficulty ?? ''}',
+                    style: Theme.of(context).textTheme.headline5),
               ),
             ]),
             Expanded(child: Container()),
             Padding(
               padding: const EdgeInsets.all(20),
               // TODO(prometheus42): Make questions fly into the screen.
-              child: Text(gameState != GameState.readyPlayers ? 'Question:\n' + (currentQuestion?.questionText ?? '') : readyPlayersMessage,
-                  textAlign: TextAlign.center, style: Theme.of(context).textTheme.headline3),
+              child: Text(
+                  gameState != GameState.readyPlayers
+                      ? AppLocalizations.of(context)!.question + ':\n' + (currentQuestion?.questionText ?? '')
+                      : readyPlayersMessage,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headline3),
             ),
             Row(children: _buildAnswerButtons()),
             Expanded(child: Container()),
@@ -1245,7 +1257,8 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
                           )),
                       Expanded(child: Container()),
                       OutlinedButton(
-                          child: Text('${widget.playerPoints[player]} Points', style: Theme.of(context).textTheme.headline3!),
+                          child: Text('${widget.playerPoints[player]} ' + AppLocalizations.of(context)!.points,
+                              style: Theme.of(context).textTheme.headline3!),
                           onPressed: () {},
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -1272,7 +1285,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Score Board'),
+          title: Text(AppLocalizations.of(context)!.scoreBoard),
           //automaticallyImplyLeading: false,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -1285,7 +1298,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Text('Score Board', style: Theme.of(context).textTheme.headline2),
+              Text(AppLocalizations.of(context)!.scoreBoard, style: Theme.of(context).textTheme.headline2),
               Row(children: [
                 Expanded(child: Container()),
                 Row(children: _buildScoreFields()),
@@ -1300,7 +1313,7 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
                       foregroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
                       padding: MaterialStateProperty.all(const EdgeInsets.all(10)),
                     ),
-                    child: Text('Back to main menu', style: Theme.of(context).textTheme.headline5),
+                    child: Text(AppLocalizations.of(context)!.backToMainMenu, style: Theme.of(context).textTheme.headline5),
                     onPressed: () => Navigator.of(context).popUntil(ModalRoute.withName("/")),
                   ),
                 ),
