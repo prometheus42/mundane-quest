@@ -1,0 +1,28 @@
+name: mundanequest
+version: 0.3.0
+summary: Mundane Quest
+description: Mundane Quest is a simple question and answer game, not unlike Trivial Pursuit.
+
+confinement: strict
+base: core18
+grade: stable
+
+slots:
+  dbus-mundanequest:
+    interface: dbus
+    bus: session
+    name: org.freenono.mundanequest
+
+apps:
+  mundanequest:
+    command: mundanequest
+    extensions: [flutter-beta]
+    plugs:
+      - network
+    slots:
+      - dbus-mundanequest
+parts:
+  mundanequest:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart

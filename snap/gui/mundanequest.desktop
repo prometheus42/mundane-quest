@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Mundane Quest
+Comment=Mundane Quest is a simple question and answer game, not unlike Trivial Pursuit.
+Exec=mundanequest
+Icon=${SNAP}/meta/gui/mundanequest.png
+Terminal=false
+Type=Application
+Categories=Games;BoardGame;
