@@ -38,8 +38,16 @@ Future<void> initSettings() async {
 class MundaneQuest extends StatelessWidget {
   const MundaneQuest({Key? key}) : super(key: key);
 
+  Color loadConfiguration() {
+    Future f = SharedPreferences.getInstance();
+    Color appBarColor = Colors.cyan;
+    f.then((prefs) => {appBarColor = prefs.getString('appBarColor') ?? Colors.cyan});
+    return appBarColor;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final appBarColor = loadConfiguration();
     return MaterialApp(
       title: 'Mundane Quest',
       localizationsDelegates: const [
@@ -286,8 +294,9 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         title: 'User Interface',
         children: [
           ColorPickerSettingsTile(
-              title: 'What color should the app bar have?',
-              settingKey: 'appBarColor',
+            title: 'What color should the app bar have?',
+            defaultValue: Colors.cyan,
+            settingKey: 'appBarColor',
           ),
         ],
       ),
@@ -396,6 +405,7 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final scaffold = ScaffoldMessenger.of(context);
     var textFields = <Padding>[];
     for (var element in listOfPlayerNameControllers) {
       var no = listOfPlayerNameControllers.indexOf(element) + 1;
@@ -414,10 +424,18 @@ class _StartGameDialogState extends State<StartGameDialogWidget> {
             const SizedBox(width: 20),
             ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    listOfPlayerNameControllers.remove(element);
-                  });
-                  developer.log('Removing player from roster...', name: 'org.freenono.mundaneQuest.main');
+                  // prevent user from deleting players so that less than two players remain
+                  if (listOfPlayerNameControllers.length > 2) {
+                    setState(() {
+                      listOfPlayerNameControllers.remove(element);
+                    });
+                    developer.log('Removing player from roster...', name: 'org.freenono.mundaneQuest.main');
+                  } else {
+                    scaffold.showSnackBar(SnackBar(
+                      content: Text(AppLocalizations.of(context)!.atLeastTwoPlayers),
+                      action: SnackBarAction(label: 'ERROR', onPressed: scaffold.hideCurrentSnackBar),
+                    ));
+                  }
                 },
                 child: Text(AppLocalizations.of(context)!.delete))
           ])));
