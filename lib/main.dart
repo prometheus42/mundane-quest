@@ -951,16 +951,18 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   }
 
   void _checkGivenAnswer(String chosenAnswer) {
-    if (chosenAnswer == currentQuestion!.correctAnswer) {
-      if (kIsWeb || !Platform.isLinux) {
-        soundEffects.setAsset('assets/audio/success.mp3').whenComplete(() => {soundEffects.play()});
-      }
-      setState(() {
-        playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
-      });
-    } else {
-      if (kIsWeb || !Platform.isLinux) {
-        soundEffects.setAsset('assets/audio/failure.mp3').whenComplete(() => {soundEffects.play()});
+    if (gameState == GameState.showQuestion) {
+      if (chosenAnswer == currentQuestion!.correctAnswer) {
+        if (kIsWeb || !Platform.isLinux) {
+          soundEffects.setAsset('assets/audio/success.mp3').whenComplete(() => {soundEffects.play()});
+        }
+        setState(() {
+          playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
+        });
+      } else {
+        if (kIsWeb || !Platform.isLinux) {
+          soundEffects.setAsset('assets/audio/failure.mp3').whenComplete(() => {soundEffects.play()});
+        }
       }
     }
     currentQuestionStartTime = 0;
