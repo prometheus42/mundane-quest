@@ -92,8 +92,7 @@ class _MundaneQuestHomePageState extends State<MundaneQuestHomePage> {
         focusNode: FocusNode(),
         autofocus: true,
         onKey: (RawKeyEvent keyEvent) {
-          developer.log(
-              '${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
+          //developer.log('${keyEvent.isAltPressed ? 'Alt' : ''} ${keyEvent.isControlPressed ? 'Ctrl' : ''} ${keyEvent.isShiftPressed ? 'Shift' : ''} ${keyEvent.physicalKey} ${keyEvent.character} ${keyEvent.physicalKey} ${keyEvent.logicalKey}');
           if (keyEvent.character == 'q') {
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           } else if (keyEvent.character == 'h') {
@@ -284,19 +283,23 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         ),
       ]),
       SettingsGroup(
-        title: 'Control',
+        title: 'User Interface',
         children: [
-          SwitchSettingsTile(
-            settingKey: 'gamepad-support',
-            title: 'Should gamepad support be activated?',
-            leading: const Icon(Icons.sports_esports_outlined), //const Icon(Icons.gamepad),
+          ColorPickerSettingsTile(
+              title: 'What color should the app bar have?',
+              settingKey: 'appBarColor',
           ),
         ],
       ),
       SettingsGroup(
-        title: 'User Interface',
+        title: 'Control',
         children: [
-          ColorPickerSettingsTile(title: 'What color should the app bar have?', settingKey: 'appBarColor'),
+          SwitchSettingsTile(
+            settingKey: 'gamepadSupport',
+            defaultValue: true,
+            title: 'Should gamepad support be activated?',
+            leading: const Icon(Icons.sports_esports_outlined), //const Icon(Icons.gamepad),
+          ),
         ],
       ),
       SettingsGroup(
@@ -304,6 +307,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
         children: [
           SwitchSettingsTile(
             settingKey: 'audioActivated',
+            defaultValue: true,
             title: 'Should audio be activated?',
             leading: const Icon(Icons.audiotrack),
           ),
@@ -684,6 +688,8 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   int roundsPerGame = 8;
   int defaultDelayTime = 4;
   int defaultReadyTime = 8;
+  bool audioActivated = false;
+  bool gamepadSupport = false;
 
   // UI parameters and helper variables
   Color currentBackgroundColor = Colors.lightGreenAccent.shade100;
@@ -704,7 +710,7 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   int currentQuestionStartTime = 0;
   late Future readyDelay;
   late Future waitAfterAnswerDelay;
-  late Timer gamepadTimer;
+  Timer? gamepadTimer;
   late Timer gameTimer;
   var rng = Random();
 
@@ -732,9 +738,10 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   void initializeEverything() {
     // prepare audio support, source: https://stackoverflow.com/a/50744481
-    if (kIsWeb || !Platform.isLinux) {
+    if (audioActivated && (kIsWeb || !Platform.isLinux)) {
       soundEffects = AudioPlayer();
       // TODO(prometheus42): Fix background music.
+      // backgroundMusic = AudioPlayer();
       // backgroundMusic.setAsset('assets/audio/bgm.mp3').whenComplete(() => {
       //   backgroundMusic.play()
       // });
@@ -754,61 +761,63 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
     // load a bundle of questions for the first round from a random category
     _loadQuestionBundle();
 
-    //initializeGamepad();
+    if (gamepadSupport) {
+      initializeGamepad();
+    }
   }
 
-  // void initializeGamepad() {
-  //   html.GamepadEvent gpe;
-  //   html.window.addEventListener(
-  //       "gamepadconnected",
-  //       (e) => {
-  //             gpe = e as html.GamepadEvent,
-  //             print('New gamepad found: ${gpe.gamepad!.id}'),
-  //             if (gpe.gamepad != null) {listOfGamepads.add(gpe.gamepad!), gamepadPresent = true}
-  //           });
-  //   html.window.addEventListener(
-  //       "gamepaddisconnected",
-  //       (e) => {
-  //             gpe = e as html.GamepadEvent,
-  //             print('Gamepad was disconnected: ${gpe.gamepad!.id}'),
-  //             if (gpe.gamepad != null) {listOfGamepads.remove(gpe.gamepad!)}
-  //           });
-  //
-  //   gamepadTimer = Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
-  //     if (gamepadPresent) {
-  //       var gamepads = html.window.navigator.getGamepads();
-  //       for (var gamepad in gamepads) {
-  //         if (gamepad != null) {
-  //           gamepadPresent = true;
-  //           if (!gamePadButtons[0] && (gamepad.buttons![0].pressed ?? false)) {
-  //             _checkGivenAnswer(answers[0]);
-  //             gamePadButtons[0] = true;
-  //           } else {
-  //             gamePadButtons[0] = false;
-  //           }
-  //           if (!gamePadButtons[1] && (gamepad.buttons![1].pressed ?? false)) {
-  //             _checkGivenAnswer(answers[1]);
-  //             gamePadButtons[1] = true;
-  //           } else {
-  //             gamePadButtons[1] = false;
-  //           }
-  //           if (!gamePadButtons[2] && (gamepad.buttons![2].pressed ?? false)) {
-  //             _checkGivenAnswer(answers[2]);
-  //             gamePadButtons[2] = true;
-  //           } else {
-  //             gamePadButtons[2] = false;
-  //           }
-  //           if (!gamePadButtons[3] && (gamepad.buttons![3].pressed ?? false)) {
-  //             _checkGivenAnswer(answers[3]);
-  //             gamePadButtons[3] = true;
-  //           } else {
-  //             gamePadButtons[3] = false;
-  //           }
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
+  void initializeGamepad() {
+    //   html.GamepadEvent gpe;
+    //   html.window.addEventListener(
+    //       "gamepadconnected",
+    //       (e) => {
+    //             gpe = e as html.GamepadEvent,
+    //             print('New gamepad found: ${gpe.gamepad!.id}'),
+    //             if (gpe.gamepad != null) {listOfGamepads.add(gpe.gamepad!), gamepadPresent = true}
+    //           });
+    //   html.window.addEventListener(
+    //       "gamepaddisconnected",
+    //       (e) => {
+    //             gpe = e as html.GamepadEvent,
+    //             print('Gamepad was disconnected: ${gpe.gamepad!.id}'),
+    //             if (gpe.gamepad != null) {listOfGamepads.remove(gpe.gamepad!)}
+    //           });
+    //
+    //   gamepadTimer = Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
+    //     if (gamepadPresent) {
+    //       var gamepads = html.window.navigator.getGamepads();
+    //       for (var gamepad in gamepads) {
+    //         if (gamepad != null) {
+    //           gamepadPresent = true;
+    //           if (!gamePadButtons[0] && (gamepad.buttons![0].pressed ?? false)) {
+    //             _checkGivenAnswer(answers[0]);
+    //             gamePadButtons[0] = true;
+    //           } else {
+    //             gamePadButtons[0] = false;
+    //           }
+    //           if (!gamePadButtons[1] && (gamepad.buttons![1].pressed ?? false)) {
+    //             _checkGivenAnswer(answers[1]);
+    //             gamePadButtons[1] = true;
+    //           } else {
+    //             gamePadButtons[1] = false;
+    //           }
+    //           if (!gamePadButtons[2] && (gamepad.buttons![2].pressed ?? false)) {
+    //             _checkGivenAnswer(answers[2]);
+    //             gamePadButtons[2] = true;
+    //           } else {
+    //             gamePadButtons[2] = false;
+    //           }
+    //           if (!gamePadButtons[3] && (gamepad.buttons![3].pressed ?? false)) {
+    //             _checkGivenAnswer(answers[3]);
+    //             gamePadButtons[3] = true;
+    //           } else {
+    //             gamePadButtons[3] = false;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   });
+  }
 
   void _handleGameTimer(Timer timer) {
     developer.log('Current game state: $gameState');
@@ -851,7 +860,9 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
           defaultReadyTime = prefs.getDouble('defaultReadyTime')?.toInt() ?? 8,
           defaultDelayTime = prefs.getDouble('defaultDelayTime')?.toInt() ?? 4,
           gameTime = prefs.getDouble('gameTime')?.toInt() ?? 30,
-          roundsPerGame = prefs.getDouble('roundsPerGame')?.toInt() ?? 7
+          roundsPerGame = prefs.getDouble('roundsPerGame')?.toInt() ?? 7,
+          audioActivated = prefs.getBool('audioActivated') ?? true,
+          gamepadSupport = prefs.getBool('gamepadSupport') ?? true
         });
   }
 
@@ -897,6 +908,8 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
     // do nothing anymore, if game has ended already
     if (gameState == GameState.gameEnded) {
+      gameTimer.cancel();
+      gamepadTimer?.cancel();
       return;
     }
 
@@ -959,14 +972,14 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
   void _checkGivenAnswer(String chosenAnswer) {
     if (gameState == GameState.showQuestion) {
       if (chosenAnswer == currentQuestion!.correctAnswer) {
-        if (kIsWeb || !Platform.isLinux) {
+        if (audioActivated && (kIsWeb || !Platform.isLinux)) {
           soundEffects.setAsset('assets/audio/success.mp3').whenComplete(() => {soundEffects.play()});
         }
         setState(() {
           playerPoints[currentPlayer] = playerPoints[currentPlayer]! + currentQuestion!.getPoints();
         });
       } else {
-        if (kIsWeb || !Platform.isLinux) {
+        if (audioActivated && (kIsWeb || !Platform.isLinux)) {
           soundEffects.setAsset('assets/audio/failure.mp3').whenComplete(() => {soundEffects.play()});
         }
       }
@@ -1019,19 +1032,19 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   String getAnswerButtonText(i, answer) {
     var buttonChar = '';
-    if (gamepadPresent) {
+    if (gamepadSupport && gamepadPresent) {
       switch (i) {
         case 0:
-          buttonChar = 'X';
+          buttonChar = '\u{2297}';
           break;
         case 1:
-          buttonChar = 'O';
+          buttonChar = '\u{229A}';
           break;
         case 2:
-          buttonChar = 'D';
+          buttonChar = '\u{1F7D7}'; // \u{1F7D8}
           break;
         case 3:
-          buttonChar = 'A';
+          buttonChar = '\u{1F7D5}'; // \u{1F7D6}
           break;
       }
     } else {
@@ -1176,9 +1189,11 @@ class _PlayGameState extends State<PlayGameWidget> with TickerProviderStateMixin
 
   @override
   void dispose() {
-    soundEffects.dispose();
+    if (audioActivated && (kIsWeb || !Platform.isLinux)) {
+      soundEffects.dispose();
+    }
     gameTimer.cancel();
-    gamepadTimer.cancel();
+    gamepadTimer?.cancel();
     super.dispose();
   }
 }
@@ -1200,9 +1215,6 @@ class _ScoreBoardWidgetState extends State<ScoreBoardWidget> {
     sortedPoints = widget.playerPoints.values.toList();
     sortedPoints.sort();
     sortedPoints = sortedPoints.reversed.toList();
-
-    /// Navigator.pushReplacementNamed(context, '/');
-
     super.initState();
   }
 
